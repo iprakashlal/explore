@@ -79,6 +79,7 @@ img{max-width:100%}
 .stage-fallback{position:absolute;inset:8%}
 .stage-fallback .shp{position:absolute}
 .photo{position:absolute;left:0;bottom:4%;width:38%;aspect-ratio:1/1;overflow:hidden;border:4px solid var(--text);background:var(--surface);z-index:3}
+.photo.on-cube{display:none}
 .photo img{width:100%;height:100%;object-fit:cover;display:block}
 .photo.circle{border-radius:50%}
 .photo.square{border-radius:var(--r)}
@@ -628,6 +629,30 @@ function initSite(c){
     const fb=()=>{const r=document.createRange();r.selectNodeContents($("#email",root));const s=getSelection();s.removeAllRanges();s.addRange(r);toast("Email selected. Copy it from here")};
     try{navigator.clipboard.writeText(tx).then(()=>toast("Email copied"),fb)}catch(e){fb()}});
 }
+/* Paint the profile photo onto every face of the cube: the cube's own colour as the
+   background, the photo inset in the chosen frame shape, a thin outline in the text colour. */
+function photoOnCube(mat,src,bg,shape,ring,stage,my,T){
+  const img=new Image();img.crossOrigin="anonymous";
+  img.onload=()=>{if(my!==gen)return;
+    const N=512,cv=document.createElement("canvas");cv.width=cv.height=N;const g=cv.getContext("2d");
+    g.fillStyle=bg;g.fillRect(0,0,N,N);
+    const pad=N*.1,sz=N-pad*2,cx=N/2,cy=N/2;
+    const path=()=>{g.beginPath();
+      if(shape==="square"){const r=sz*.12;g.moveTo(pad+r,pad);g.arcTo(pad+sz,pad,pad+sz,pad+sz,r);g.arcTo(pad+sz,pad+sz,pad,pad+sz,r);g.arcTo(pad,pad+sz,pad,pad,r);g.arcTo(pad,pad,pad+sz,pad,r)}
+      else if(shape==="hexagon"){[[.25,0],[.75,0],[1,.5],[.75,1],[.25,1],[0,.5]].forEach(([x,y],k)=>g[k?"lineTo":"moveTo"](pad+x*sz,pad+y*sz))}
+      else if(shape==="diamond"){g.moveTo(cx,pad);g.lineTo(pad+sz,cy);g.lineTo(cx,pad+sz);g.lineTo(pad,cy)}
+      else g.arc(cx,cy,sz/2,0,Math.PI*2);
+      g.closePath()};
+    g.save();path();g.clip();
+    const k=Math.max(sz/img.width,sz/img.height),w=img.width*k,h=img.height*k;
+    g.drawImage(img,cx-w/2,cy-h/2,w,h);g.restore();
+    path();g.lineWidth=N*.02;g.strokeStyle=ring;g.stroke();
+    const tex=new T.CanvasTexture(cv);tex.anisotropy=4;
+    mat.map=tex;mat.color.set(0xffffff);mat.flatShading=false;mat.needsUpdate=true;
+    const ph=stage.parentElement&&stage.parentElement.querySelector(".photo");if(ph)ph.classList.add("on-cube");
+  };
+  img.src=src;
+}
 function initThree(c,stage,my,motion){
   const t=c.theme,T=window.THREE;
   const r=new T.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio||1,2));
@@ -639,10 +664,14 @@ function initThree(c,stage,my,motion){
   const geos={sphere:()=>new T.SphereGeometry(1.25,32,32),cube:()=>new T.BoxGeometry(1.7,1.7,1.7),pyramid:()=>new T.ConeGeometry(1.05,1.8,3),torus:()=>new T.TorusGeometry(.72,.24,16,48),icosahedron:()=>new T.IcosahedronGeometry(.9,0),octahedron:()=>new T.OctahedronGeometry(.8,0),cylinder:()=>new T.CylinderGeometry(.7,.7,1.5,6)};
   const scl=[1,1,1,1,.6,.5],pos=[[-1.3,.7,0],[1.35,-.6,-.4],[-.9,-1.6,.9],[1.6,1.65,.2],[.15,.05,1.8],[-2.4,-.5,-.8]];
   const items=[];
+  const photoSrc=c.hero.photo?imgUrl(c.hero.photo):"";let photoUsed=false;
   c.hero.solids.slice(0,6).forEach((s,i)=>{const g=(geos[s.type]||geos.sphere)();
-    const m=new T.Mesh(g,new T.MeshStandardMaterial({color:new T.Color(colHex(t,s.color)),roughness:.45,metalness:.05,flatShading:true}));
+    const mat=new T.MeshStandardMaterial({color:new T.Color(colHex(t,s.color)),roughness:.45,metalness:.05,flatShading:true});
+    const m=new T.Mesh(g,mat);
     m.add(new T.LineSegments(new T.EdgesGeometry(g),new T.LineBasicMaterial({color:new T.Color(t.text)})));
-    m.scale.setScalar(scl[i]);m.position.set(...pos[i]);group.add(m);items.push({m,base:pos[i][1],ph:Math.random()*6,sx:.002+Math.random()*.01,sy:.004+Math.random()*.01,f:.2+Math.random()*.2})});
+    const onCube=photoSrc&&s.type==="cube"&&!photoUsed;if(onCube){photoUsed=true;photoOnCube(mat,photoSrc,colHex(t,s.color),c.hero.photoShape,t.text,stage,my,T)}
+    m.scale.setScalar(onCube?Math.max(1.15,scl[i]):scl[i]);m.position.set(...pos[i]);group.add(m);
+    items.push({m,base:pos[i][1],ph:Math.random()*6,sx:onCube?.003:.002+Math.random()*.01,sy:onCube?.005:.004+Math.random()*.01,f:.2+Math.random()*.2})});
   const pts=[];for(let i=0;i<90;i++){const a=i/90*Math.PI*2;pts.push(Math.cos(a)*3.3,Math.sin(a)*.5,Math.sin(a)*3.3)}
   const rg=new T.BufferGeometry();rg.setAttribute("position",new T.Float32BufferAttribute(pts,3));const ring=new T.Points(rg,new T.PointsMaterial({color:new T.Color(t.glow),size:.06}));group.add(ring);
   let tx=0,ty=0,cx=0,cy=0,drag=false,lx=0,dy=0,vis=true;
@@ -802,7 +831,7 @@ const SCHEMA={
       {t:"textarea",path:"hero.role",label:"Intro line",hint:"Wrap words in *asterisks* to highlight them."}]},
     {title:"Buttons",fields:[{t:"grid2",fields:[{t:"text",path:"hero.ctaPrimary",label:"Main button label"},{t:"select",path:"hero.ctaPrimaryTarget",label:"Main button scrolls to",options:Object.keys(SECTION_NAMES),labels:SECTION_NAMES},
       {t:"text",path:"hero.ctaSecondary",label:"Second button label"},{t:"text",path:"hero.ctaSecondaryUrl",label:"Second button link"}]}]},
-    {title:"Photo",fields:[{t:"image",path:"hero.photo",label:"Profile photo"},{t:"select",path:"hero.photoShape",label:"Photo frame",options:["circle","square","hexagon","diamond"]}]},
+    {title:"Photo",fields:[{t:"image",path:"hero.photo",label:"Profile photo, shown on the 3D cube"},{t:"select",path:"hero.photoShape",label:"Photo shape on the cube",options:["circle","square","hexagon","diamond"]},{t:"note",text:"The photo goes on the first cube in your 3D shapes, framed in that cube\u2019s colour. Change the cube\u2019s colour under 3D shapes. With no cube, or with 3D shapes switched off, the photo shows as a framed picture instead."}]},
     {title:"Highlights under the buttons",fields:[{t:"list",path:"hero.meta",add:{value:"New",label:"Label"},max:5,title:it=>`${it.value} · ${it.label}`,item:[{t:"grid2",fields:[{t:"text",path:"value",label:"Value"},{t:"text",path:"label",label:"Label"}]}]}]},
     {title:"3D shapes",fields:[{t:"list",path:"hero.solids",add:{type:"sphere",color:"c1"},max:6,title:it=>`${SOLIDS.find(s=>s[0]===it.type)?.[1]||it.type}`,item:[{t:"select",path:"type",label:"Solid",options:SOLIDS.map(s=>s[0]),labels:Object.fromEntries(SOLIDS)},{t:"color-key",path:"color",label:"Colour"}]}]},
     {title:"Scrolling skills band",fields:[{t:"strings",path:"ticker",label:"Words in the band",addLabel:"Add word"}]}]},
@@ -908,6 +937,7 @@ function field(f,obj,base){
     case "image":return imageField(f,obj,id);
     case "strings":return stringsField(f,obj);
     case "list":return listField(f,obj,path);
+    case "note":return el(`<p class="hint" style="font-size:13px;color:var(--a-soft)">${esc(f.text)}</p>`);
     case "presets":{const w=el(`<div class="presets">${PRESETS.map((p,i)=>`<button class="preset" type="button" data-i="${i}"><span class="bar">${["bg","surface","c1","c2","c3","text"].map(k=>`<i style="background:${p.t[k]}"></i>`).join("")}</span>${esc(p.name)}</button>`).join("")}</div>`);
       w.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{Object.assign(draft.theme,PRESETS[+b.dataset.i].t);markDirty();renderPanelKeep();toast(PRESETS[+b.dataset.i].name+" applied. Preview or save to see it live")});return w}
   }
