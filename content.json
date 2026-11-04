@@ -103,7 +103,7 @@
     },
     {
       "id": "projects",
-      "visible": false,
+      "visible": true,
       "navLabel": "Projects"
     },
     {
