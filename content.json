@@ -372,7 +372,18 @@
     "eyebrow": "Projects",
     "title": "Selected work.",
     "lede": "A closer look at things I've built.",
-    "items": []
+    "items": [
+      {
+        "title": "New project",
+        "body": "What it is and what you did.",
+        "url": "gg.com",
+        "linkLabel": "View project",
+        "image": null,
+        "color": "text",
+        "shape": "diamond",
+        "tags": []
+      }
+    ]
   },
   "learning": {
     "eyebrow": "Learning",
