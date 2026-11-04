@@ -439,7 +439,8 @@
     "languages": [
       "English",
       "हिन्दी",
-      "मराठी"
+      "मराठी",
+      ""
     ]
   },
   "contact": {
@@ -459,6 +460,6 @@
       }
     ],
     "footerLeft": "© 2026 Prakash Lal",
-    "footerRight": "Circle · Square · Triangle · Mumbai"
+    "footerRight": "Mumbai · Pune · Chennai · Hyderabad · Delhi  · Bangalore"
   }
 }
