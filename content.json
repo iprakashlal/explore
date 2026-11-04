@@ -12,7 +12,7 @@
     "glow": "#FF5C8A",
     "fontDisplay": "Unbounded",
     "fontBody": "Work Sans",
-    "radius": 24,
+    "radius": 10,
     "showGrid": true,
     "showGlow": true,
     "showNetwork": true,
@@ -439,8 +439,7 @@
     "languages": [
       "English",
       "हिन्दी",
-      "मराठी",
-      ""
+      "मराठी"
     ]
   },
   "contact": {
