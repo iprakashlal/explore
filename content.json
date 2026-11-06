@@ -125,8 +125,8 @@
     "title": "Built from the basics up.",
     "lede": "From a two-person design studio to leading engineering at an insurer. Every step added a new piece.",
     "storyLabel": "The story",
-    "storyHeading": "I started by *designing pixels* for clients. Today I lead the teams that ship them at enterprise scale.",
-    "story": "My first venture, PicAffectz, was a web and graphic design studio I ran while studying IT. Since then I've built at Deloitte, Optum (UnitedHealth Group) and now Bandhan Life, formerly Aegon Life.\n\nI care about clean architecture, typed code and interfaces that make complex numbers easy to read.",
+    "storyHeading": "I started by *developing pixels* for clients. Today I lead the tech that ship them at enterprise scale.",
+    "story": "My first venture, PicAffectz, was a web and graphic design studio I ran while pursuing graduation. Since then I've built myself at several organizations including Deloitte, Optum (UnitedHealth Group) and now Bandhan Life, formerly Aegon Life.\n\nI care about clean architecture, typed code and interfaces that make complex numbers easy to read.",
     "stats": [
       {
         "value": 14,
