@@ -1,8 +1,12 @@
 {
   "template": "portfolio",
   "name": "Prakash Lal",
-  "version": 3,
+  "version": 7,
   "admin": "admin.html",
-  "exportedAt": "2026-11-12T11:41:48.564Z",
-  "generator": "Site Studio"
+  "exportedAt": "2026-11-12T18:06:47.560Z",
+  "generator": "Site Studio",
+  "studioBuild": {
+    "id": "e9bd909",
+    "at": "2026-11-12T18:00:27.530Z"
+  }
 }
