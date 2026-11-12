@@ -78,15 +78,11 @@
     "photoShape": "circle",
     "meta": [
       {
-        "value": "14+",
+        "value": "10+",
         "label": "Years"
       },
       {
-        "value": "40",
-        "label": "Projects"
-      },
-      {
-        "value": "Mumbai",
+        "value": "Bangalore",
         "label": "Based in"
       }
     ],
