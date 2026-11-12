@@ -49,11 +49,21 @@
     "introCase": "upper",
     "logoRadius": 24,
     "scrollEase": "light",
-    "lineBreaks": "typed"
+    "lineBreaks": "typed",
+    "beltCustom": false,
+    "beltBg": "#000000",
+    "beltFg": "#FFFFFF",
+    "beltDotOne": false,
+    "beltDot": "#E0204F"
   },
   "brand": {
     "logoText": "Prakash Lal",
-    "contactLabel": "Contact"
+    "contactLabel": "Contact",
+    "icon": {
+      "path": "assets/uploads/1794473523838-img-0168.png"
+    },
+    "iconInMenu": true,
+    "iconOnHero": true
   },
   "hero": {
     "eyebrow": "Senior Lead Software Engineer || Bandhan Group (Former Aegon) || ex-Deloitte || ex-UHG · Mumbai",
@@ -64,9 +74,7 @@
     "ctaPrimaryTarget": "work",
     "ctaSecondary": "LinkedIn ↗",
     "ctaSecondaryUrl": "https://www.linkedin.com/in/prakashlal",
-    "photo": {
-      "path": "assets/uploads/1794472367817-img-0168.png"
-    },
+    "photo": null,
     "photoShape": "circle",
     "meta": [
       {
@@ -107,7 +115,11 @@
         "type": "octahedron",
         "color": "c1"
       }
-    ]
+    ],
+    "discImage": null,
+    "discRim": "theme",
+    "discSize": "m",
+    "discMotion": true
   },
   "ticker": [
     "Engineering Leadership",
