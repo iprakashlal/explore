@@ -47,7 +47,7 @@
     "introTitle": "Prakash Lal",
     "introFont": "body",
     "introCase": "upper",
-    "logoRadius": 24,
+    "logoRadius": 0,
     "scrollEase": "light",
     "lineBreaks": "typed",
     "beltCustom": false,
