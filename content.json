@@ -45,7 +45,7 @@
     "introFg": "#c2c2c2",
     "kit": "classic",
     "introTitle": "Prakash Lal",
-    "introFont": "display",
+    "introFont": "body",
     "introCase": "upper",
     "logoRadius": 24,
     "scrollEase": "light",
