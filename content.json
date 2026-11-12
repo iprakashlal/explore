@@ -12,7 +12,7 @@
     "glow": "#E0204F",
     "fontDisplay": "Fraunces",
     "fontBody": "DM Sans",
-    "radius": 6,
+    "radius": 0,
     "showGrid": false,
     "showGlow": false,
     "showNetwork": false,
@@ -47,7 +47,7 @@
     "introTitle": "Prakash Lal",
     "introFont": "display",
     "introCase": "upper",
-    "logoRadius": 17,
+    "logoRadius": 24,
     "scrollEase": "light",
     "lineBreaks": "typed"
   },
@@ -64,7 +64,9 @@
     "ctaPrimaryTarget": "work",
     "ctaSecondary": "LinkedIn ↗",
     "ctaSecondaryUrl": "https://www.linkedin.com/in/prakashlal",
-    "photo": null,
+    "photo": {
+      "path": "assets/uploads/1794472367817-img-0168.png"
+    },
     "photoShape": "circle",
     "meta": [
       {
