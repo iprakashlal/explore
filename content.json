@@ -50,9 +50,9 @@
     "logoRadius": 0,
     "scrollEase": "light",
     "lineBreaks": "typed",
-    "beltCustom": false,
-    "beltBg": "#000000",
-    "beltFg": "#FFFFFF",
+    "beltCustom": true,
+    "beltBg": "#00374a",
+    "beltFg": "#f5ec00",
     "beltDotOne": false,
     "beltDot": "#E0204F"
   },
