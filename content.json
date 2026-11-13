@@ -35,26 +35,27 @@
     "skills": "cube",
     "work": "stack",
     "cursor": "none",
-    "loader": "curtain",
+    "loader": "iris",
     "textfx": "letters",
     "hoverfx": "magnetic",
     "scrollfx": "skew",
     "overlay": "scanlines",
-    "motif": "retro",
-    "introBg": "#11053b",
-    "introFg": "#c2c2c2",
     "kit": "classic",
-    "introTitle": "Prakash Lal",
-    "introFont": "body",
-    "introCase": "upper",
-    "logoRadius": 0,
-    "scrollEase": "light",
-    "lineBreaks": "typed",
-    "beltCustom": true,
+    "motif": "retro",
     "beltBg": "#00374a",
     "beltFg": "#f5ec00",
+    "beltDot": "#E0204F",
+    "introBg": "#11053b",
+    "introFg": "#c2c2c2",
+    "navMode": "hide",
+    "introCase": "upper",
+    "introFont": "body",
+    "beltCustom": true,
     "beltDotOne": false,
-    "beltDot": "#E0204F"
+    "introTitle": "Prakash Lal",
+    "lineBreaks": "typed",
+    "logoRadius": 0,
+    "scrollEase": "light"
   },
   "brand": {
     "logoText": "Prakash Lal",
@@ -69,7 +70,7 @@
     "eyebrow": "Senior Lead Software Engineer || Bandhan Group (Former Aegon) || ex-Deloitte || ex-UHG · Mumbai",
     "firstName": "Prakash",
     "lastName": "Lal",
-    "role": "I design and build *useful things* for people who care about the details.",
+    "role": "I design and build *useful things* for people who care about the details",
     "ctaPrimary": "View the deck ↓",
     "ctaPrimaryTarget": "work",
     "ctaSecondary": "LinkedIn ↗",
@@ -78,12 +79,12 @@
     "photoShape": "circle",
     "meta": [
       {
-        "value": "10+",
-        "label": "Years"
+        "label": "Years",
+        "value": "10+"
       },
       {
-        "value": "Bangalore",
-        "label": "Based in"
+        "label": "Based in",
+        "value": "Bangalore"
       }
     ],
     "solids": [
@@ -112,10 +113,11 @@
         "color": "c1"
       }
     ],
-    "discImage": null,
     "discRim": "theme",
     "discSize": "m",
-    "discMotion": true
+    "discImage": null,
+    "discMotion": true,
+    "graphic": "elements"
   },
   "ticker": [
     "Engineering Leadership",
@@ -156,34 +158,34 @@
   ],
   "about": {
     "eyebrow": "About",
-    "title": "Built from the basics up.",
-    "lede": "You have it on paper, trust me, I'll make it real!",
+    "title": "Basics to Engineering",
+    "lede": "",
     "storyLabel": "The story",
-    "storyHeading": "I started with *one small project*. Now I help teams ship work they're proud of.",
-    "story": "You have it on paper, trust me, I'll make it real!",
+    "storyHeading": "You have it on *paper*, trust me, I'll make it *real*!",
+    "story": "Great things take time",
     "stats": [
       {
-        "value": 10,
-        "suffix": "+",
-        "label": "Years of experience",
         "color": "c2",
-        "shape": "circle"
+        "label": "Years of experience",
+        "shape": "circle",
+        "value": 10,
+        "suffix": "+"
       },
       {
-        "value": 6,
-        "suffix": "",
-        "label": "Organizations",
         "color": "glow",
-        "shape": "pill"
+        "label": "Organizations",
+        "shape": "pill",
+        "value": 6,
+        "suffix": ""
       }
     ],
-    "quote": "“Your problems & my solution.”",
-    "quoteLabel": "Working motto",
+    "quote": "“Your problems will love my solution.”",
+    "quoteLabel": "Motto of my ship",
     "factsLabel": "Quick facts",
     "facts": [
       {
         "k": "Now",
-        "v": "Bandhan Life"
+        "v": "Bandhan Life (Former Aegon Life)"
       },
       {
         "k": "Before",
@@ -202,51 +204,51 @@
     "items": [
       {
         "tag": "01 / Plan",
-        "title": "Strategy",
         "body": "Turning goals into a clear plan.",
-        "detail": "Workshops, roadmaps and priorities.",
         "color": "c1",
-        "shape": "circle"
+        "shape": "circle",
+        "title": "Strategy",
+        "detail": "Workshops, roadmaps and priorities."
       },
       {
         "tag": "02 / Shape",
-        "title": "Design",
         "body": "Interfaces that feel obvious.",
-        "detail": "Flows, wireframes and visual design.",
         "color": "surface",
-        "shape": "square"
+        "shape": "square",
+        "title": "Design",
+        "detail": "Flows, wireframes and visual design."
       },
       {
         "tag": "03 / Build",
-        "title": "Specialist",
         "body": "Fast, accessible, maintainable.",
-        "detail": "UI Logic, TypeScript, Vue, Angular, Core JS.",
         "color": "c2",
-        "shape": "ring"
+        "shape": "ring",
+        "title": "Specialist",
+        "detail": "UI Logic, TypeScript, Vue, Angular, Core JS."
       },
       {
         "tag": "04 / Learn",
-        "title": "Research",
         "body": "Decisions backed by real users.",
-        "detail": "Interviews, tests and analytics.",
         "color": "c3",
-        "shape": "triangle"
+        "shape": "triangle",
+        "title": "Research",
+        "detail": "Interviews, tests and analytics."
       },
       {
         "tag": "05 / Try",
-        "title": "Prototyping",
         "body": "Ideas you can click before you build.",
-        "detail": "Quick prototypes to test ideas early.",
         "color": "text",
-        "shape": "hexagon"
+        "shape": "hexagon",
+        "title": "Prototyping",
+        "detail": "Quick prototypes to test ideas early."
       },
       {
         "tag": "06 / Ship",
-        "title": "Delivery",
         "body": "From plan to production, on time.",
-        "detail": "Releases, reviews and measurement.",
         "color": "surface",
-        "shape": "ring"
+        "shape": "ring",
+        "title": "Delivery",
+        "detail": "Releases, reviews and measurement."
       }
     ]
   },
@@ -256,64 +258,54 @@
     "lede": "Each role stacks on the last. Scroll to deal the cards.",
     "items": [
       {
-        "period": "Nov 2026 – Present",
-        "title": "Senior Lead Software Engineer",
+        "art": [
+          {
+            "type": "circle",
+            "color": "c1"
+          },
+          {
+            "type": "square",
+            "color": "c2"
+          },
+          {
+            "type": "triangle",
+            "color": "c3"
+          }
+        ],
         "org": "Bandhan Life",
-        "orgNote": "India",
-        "current": true,
         "color": "surface",
         "image": null,
+        "title": "Senior Lead Software Engineer",
+        "period": "Nov 2026 – Present",
         "bullets": [
           "Senior Lead Software Engineer at Bandhan Life."
         ],
-        "art": [
-          {
-            "type": "circle",
-            "color": "c1"
-          },
-          {
-            "type": "square",
-            "color": "c2"
-          },
-          {
-            "type": "triangle",
-            "color": "c3"
-          }
-        ]
+        "current": true,
+        "orgNote": "India"
       },
       {
-        "period": "Jul 2022 – Nov 2026",
-        "title": "Lead Software Engineer",
+        "art": [
+          {
+            "type": "ring",
+            "color": "text"
+          },
+          {
+            "type": "diamond",
+            "color": "c3"
+          }
+        ],
         "org": "Bandhan Life",
-        "orgNote": "India",
-        "current": false,
         "color": "c1",
         "image": null,
+        "title": "Lead Software Engineer",
+        "period": "Jul 2022 – Nov 2026",
         "bullets": [
           "Lead Frontend Specialist (Former Aegon)"
         ],
-        "art": [
-          {
-            "type": "ring",
-            "color": "text"
-          },
-          {
-            "type": "diamond",
-            "color": "c3"
-          }
-        ]
+        "current": false,
+        "orgNote": "India"
       },
       {
-        "period": "Mar 2021 – Jul 2022",
-        "title": "Frontend Software Engineer ll",
-        "org": "Optum | United Health Group",
-        "orgNote": "Gurugram",
-        "current": false,
-        "color": "c3",
-        "image": null,
-        "bullets": [
-          "Frontend Software Engineer ll at Optum | United Health Group."
-        ],
         "art": [
           {
             "type": "half",
@@ -323,19 +315,19 @@
             "type": "square",
             "color": "c2"
           }
-        ]
+        ],
+        "org": "Optum | United Health Group",
+        "color": "c3",
+        "image": null,
+        "title": "Frontend Software Engineer ll",
+        "period": "Mar 2021 – Jul 2022",
+        "bullets": [
+          "Frontend Software Engineer ll at Optum | United Health Group."
+        ],
+        "current": false,
+        "orgNote": "Gurugram"
       },
       {
-        "period": "May 2017 – Feb 2021",
-        "title": "Web Developer | Analyst L3",
-        "org": "Deloitte",
-        "orgNote": "Greater Hyderabad Area",
-        "current": false,
-        "color": "surface",
-        "image": null,
-        "bullets": [
-          "Web Developer"
-        ],
         "art": [
           {
             "type": "circle",
@@ -349,19 +341,19 @@
             "type": "triangle",
             "color": "c3"
           }
-        ]
+        ],
+        "org": "Deloitte",
+        "color": "surface",
+        "image": null,
+        "title": "Web Developer | Analyst L3",
+        "period": "May 2017 – Feb 2021",
+        "bullets": [
+          "Web Developer"
+        ],
+        "current": false,
+        "orgNote": "Greater Hyderabad Area"
       },
       {
-        "period": "Feb 2016 – May 2017",
-        "title": "Software and Web Developer | Consultant",
-        "org": "MindCraft Software Pvt. Ltd.",
-        "orgNote": "",
-        "current": false,
-        "color": "c1",
-        "image": null,
-        "bullets": [
-          "Mumbai Metropolitan Region"
-        ],
         "art": [
           {
             "type": "ring",
@@ -371,19 +363,19 @@
             "type": "diamond",
             "color": "c3"
           }
-        ]
+        ],
+        "org": "MindCraft Software Pvt. Ltd.",
+        "color": "c1",
+        "image": null,
+        "title": "Software and Web Developer | Consultant",
+        "period": "Feb 2016 – May 2017",
+        "bullets": [
+          "Mumbai Metropolitan Region"
+        ],
+        "current": false,
+        "orgNote": ""
       },
       {
-        "period": "Nov 2014 – Feb 2016",
-        "title": "Digital Technology Associate",
-        "org": "V. K. Lalco Pvt. Ltd.",
-        "orgNote": "Nariman Point",
-        "current": false,
-        "color": "c3",
-        "image": null,
-        "bullets": [
-          "Digital Technology Associate at V. K. Lalco Pvt. Ltd.."
-        ],
         "art": [
           {
             "type": "half",
@@ -393,34 +385,44 @@
             "type": "square",
             "color": "c2"
           }
-        ]
+        ],
+        "org": "V. K. Lalco Pvt. Ltd.",
+        "color": "c3",
+        "image": null,
+        "title": "Digital Technology Associate",
+        "period": "Nov 2014 – Feb 2016",
+        "bullets": [
+          "Digital Technology Associate at V. K. Lalco Pvt. Ltd.."
+        ],
+        "current": false,
+        "orgNote": "Nariman Point"
       },
       {
-        "period": "Oct 2012 – Nov 2014",
-        "title": "Entrepreneur",
+        "art": [
+          {
+            "type": "circle",
+            "color": "c1"
+          },
+          {
+            "type": "square",
+            "color": "c2"
+          },
+          {
+            "type": "triangle",
+            "color": "c3"
+          }
+        ],
         "org": "PicAffectz",
-        "orgNote": "",
-        "current": false,
         "color": "surface",
         "image": null,
+        "title": "Entrepreneur",
+        "period": "Oct 2012 – Nov 2014",
         "bullets": [
           "Mumbai Metropolitan Region",
           "Web Development & Graphic Designing Venture"
         ],
-        "art": [
-          {
-            "type": "circle",
-            "color": "c1"
-          },
-          {
-            "type": "square",
-            "color": "c2"
-          },
-          {
-            "type": "triangle",
-            "color": "c3"
-          }
-        ]
+        "current": false,
+        "orgNote": ""
       }
     ]
   },
@@ -436,53 +438,53 @@
     "languagesLabel": "Speaks",
     "items": [
       {
-        "period": "2011 – 2014",
-        "title": "B.Sc. I.T., Web Engineer",
         "sub": "Usha Pravin Gandhi College of Arts, Commerce and Science",
+        "color": "c1",
         "shape": "circle",
-        "color": "c1"
+        "title": "B.Sc. I.T., Web Engineer",
+        "period": "2011 – 2014"
       },
       {
-        "period": "2009 – 2011",
-        "title": "HSC, Mumbai University",
         "sub": "R. D. National College",
+        "color": "c2",
         "shape": "square",
-        "color": "c2"
+        "title": "HSC, Mumbai University",
+        "period": "2009 – 2011"
       },
       {
-        "period": "1999 – 2009",
-        "title": "SSC, University of Mumbai",
         "sub": "St. Andrews High School",
+        "color": "c3",
         "shape": "triangle",
-        "color": "c3"
+        "title": "SSC, University of Mumbai",
+        "period": "1999 – 2009"
       },
       {
-        "period": "Certification",
+        "sub": "",
+        "color": "c1",
+        "shape": "circle",
         "title": "Bachelor Of Science in Information",
-        "sub": "",
-        "shape": "circle",
-        "color": "c1"
+        "period": "Certification"
       },
       {
-        "period": "Certification",
-        "title": "Technology",
         "sub": "",
+        "color": "c2",
         "shape": "square",
-        "color": "c2"
+        "title": "Technology",
+        "period": "Certification"
       },
       {
-        "period": "Certification",
-        "title": "Foundations of User Experience (UX) Design",
         "sub": "",
+        "color": "c3",
         "shape": "triangle",
-        "color": "c3"
+        "title": "Foundations of User Experience (UX) Design",
+        "period": "Certification"
       },
       {
-        "period": "Certification",
-        "title": "Mastering Typescript",
         "sub": "",
+        "color": "c1",
         "shape": "circle",
-        "color": "c1"
+        "title": "Mastering Typescript",
+        "period": "Certification"
       }
     ],
     "languages": [
@@ -499,8 +501,8 @@
     "copyLabel": "Copy email",
     "links": [
       {
-        "label": "LinkedIn",
-        "url": "https://www.linkedin.com/in/prakashlal"
+        "url": "https://www.linkedin.com/in/prakashlal",
+        "label": "LinkedIn"
       }
     ],
     "footerLeft": "© 2026 Prakash Lal",
@@ -508,16 +510,18 @@
   },
   "seo": {
     "titlePattern": "{page} · {site}",
-    "keywords": "",
+    "keywords": "prakash, frontend, engineer",
     "author": "Prakash Lal",
-    "image": null,
-    "siteUrl": "",
-    "themeColor": "",
+    "image": {
+      "path": "assets/uploads/1794489249427-2d19c5aa-14c7-4fd6-a856-7e056ce63d9d.png"
+    },
+    "siteUrl": "https://www.prakashlal.in/",
+    "themeColor": "#e52706",
     "noindex": false,
     "googleVerification": "",
     "meta": [],
-    "title": "Prakash Lal · Senior Lead Software Engineer || Bandhan Group (Former A",
-    "description": "You have it on paper, trust me, I'll make it real!"
+    "title": "Prakash Lal · Senior Lead Software Engineer || Bandhan Group",
+    "description": "Software Engineer"
   },
   "velocity": {
     "status": "Available for new projects",
@@ -541,29 +545,29 @@
     "storyLabel": "Along the way",
     "stories": [
       {
+        "year": "2016",
         "image": null,
-        "caption": "First project shipped",
-        "year": "2016"
+        "caption": "First project shipped"
       },
       {
+        "year": "2019",
         "image": null,
-        "caption": "Led my first team",
-        "year": "2019"
+        "caption": "Led my first team"
       },
       {
+        "year": "2022",
         "image": null,
-        "caption": "Product launch",
-        "year": "2022"
+        "caption": "Product launch"
       },
       {
+        "year": "2024",
         "image": null,
-        "caption": "Speaking on stage",
-        "year": "2024"
+        "caption": "Speaking on stage"
       },
       {
+        "year": "2026",
         "image": null,
-        "caption": "New chapter",
-        "year": "2026"
+        "caption": "New chapter"
       }
     ],
     "quotes": [
@@ -573,18 +577,18 @@
     "showSplit": true,
     "split": [
       {
-        "kicker": "On",
-        "title": "the job",
         "text": "Roles, results and the teams I've worked with.",
-        "target": "work",
-        "image": null
+        "image": null,
+        "title": "the job",
+        "kicker": "On",
+        "target": "work"
       },
       {
-        "kicker": "Off",
-        "title": "the clock",
         "text": "Side projects, experiments and things I make for fun.",
-        "target": "projects",
-        "image": null
+        "image": null,
+        "title": "the clock",
+        "kicker": "Off",
+        "target": "projects"
       }
     ],
     "showPartners": true,
@@ -593,38 +597,50 @@
     "partnersText": "Teams, clients and brands I've built things with.",
     "partners": [
       {
-        "name": "Company One",
+        "url": "",
         "logo": null,
-        "url": ""
+        "name": "Company One"
       },
       {
-        "name": "Company Two",
+        "url": "",
         "logo": null,
-        "url": ""
+        "name": "Company Two"
       },
       {
-        "name": "Studio Three",
+        "url": "",
         "logo": null,
-        "url": ""
+        "name": "Studio Three"
       },
       {
-        "name": "Agency Four",
+        "url": "",
         "logo": null,
-        "url": ""
+        "name": "Agency Four"
       },
       {
-        "name": "Brand Five",
+        "url": "",
         "logo": null,
-        "url": ""
+        "name": "Brand Five"
       },
       {
-        "name": "Lab Six",
+        "url": "",
         "logo": null,
-        "url": ""
+        "name": "Lab Six"
       }
     ],
     "footerTagline": "Always building *the next thing.*",
     "backToTop": "Back to top"
+  },
+  "poweredBy": {
+    "show": true
+  },
+  "cms": {
+    "adminPage": "admin",
+    "themes": {
+      "mode": "some",
+      "list": [
+        "gallery"
+      ]
+    }
   },
   "labels": {
     "scrollHint": "Scroll to discover",
@@ -640,8 +656,5 @@
     "inThisEdition": "In this edition",
     "classifieds": "Classifieds",
     "letters": "Letters to the editor"
-  },
-  "cms": {
-    "adminPage": "admin"
   }
 }

@@ -4,19 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Prakash Lal · Senior Lead Software Engineer || Bandhan Group (Former A</title>
+<title>Prakash Lal · Senior Lead Software Engineer || Bandhan Group</title>
 <!-- site-meta -->
-<meta name="description" content="You have it on paper, trust me, I'll make it real!">
+<meta name="description" content="Software Engineer">
+<meta name="keywords" content="prakash, frontend, engineer">
 <meta name="author" content="Prakash Lal">
-<link rel="canonical" href="https://iprakashlal.github.io/explore/">
+<meta name="theme-color" content="#e52706">
+<link rel="canonical" href="https://www.prakashlal.in/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Prakash Lal · Senior Lead Software Engineer || Bandhan Group (Former A">
-<meta property="og:description" content="You have it on paper, trust me, I'll make it real!">
+<meta property="og:title" content="Prakash Lal · Senior Lead Software Engineer || Bandhan Group">
+<meta property="og:description" content="Software Engineer">
 <meta property="og:site_name" content="Prakash Lal">
-<meta property="og:url" content="https://iprakashlal.github.io/explore/">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Prakash Lal · Senior Lead Software Engineer || Bandhan Group (Former A">
-<meta name="twitter:description" content="You have it on paper, trust me, I'll make it real!">
+<meta property="og:url" content="https://www.prakashlal.in/">
+<meta property="og:image" content="https://www.prakashlal.in/assets/uploads/1794489249427-2d19c5aa-14c7-4fd6-a856-7e056ce63d9d.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Prakash Lal · Senior Lead Software Engineer || Bandhan Group">
+<meta name="twitter:description" content="Software Engineer">
+<meta name="twitter:image" content="https://www.prakashlal.in/assets/uploads/1794489249427-2d19c5aa-14c7-4fd6-a856-7e056ce63d9d.png">
 <style id="site-boot">html{background:#F7F052}</style>
 <!-- /site-meta -->
 <script>try{var b=localStorage.getItem("site-bg:"+location.pathname.replace(/[^/]*$/,""));if(b)document.documentElement.style.background=b;var x=sessionStorage.getItem("fx-exit");if(x){var c=x.charAt(0)=="{"?JSON.parse(x).bg:x;if(/^(#[0-9a-f]{3,8}|rgba?\([0-9., %]+\))$/i.test(c)){var s=document.createElement("style");s.id="fx-pre";s.textContent="html{background:"+c+"!important}body>*{visibility:hidden}";document.head.appendChild(s);setTimeout(function(){s.remove()},3500)}}}catch(e){}</script>
@@ -978,9 +982,9 @@ html[data-hero-art=none] .stage-wrap #stage:not([data-gfx]){display:none}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="assets/badge.js?v=35ea324"></script><script src="assets/fx.js?v=35ea324"></script>
-<script src="assets/motifs.js?v=35ea324"></script>
-<script src="assets/layouts.js?v=35ea324"></script>
+<script src="assets/badge.js?v=45acbb5"></script><script src="assets/fx.js?v=45acbb5"></script>
+<script src="assets/motifs.js?v=45acbb5"></script>
+<script src="assets/layouts.js?v=45acbb5"></script>
 <script>
 (()=>{
 "use strict";
@@ -1662,7 +1666,7 @@ if(PREVIEW){
   window.parent.postMessage({type:"cms:ready",page:"index.html"},location.origin);
 }
 if(PREVIEW)renderSite(saved);
-else(async()=>{let got=null;try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);if(HOST){const r=await fetch(HOST.db+"/rest/v1/site_content?select=content&site=eq."+encodeURIComponent(HOST.site),{cache:"no-store",signal:ac.signal,headers:{apikey:HOST.key,Authorization:"Bearer "+HOST.key}});if(r.ok){const j=await r.json();if(j&&j[0]&&j[0].content)got=j[0].content}}}catch(e){}
+else(async()=>{let got=null;try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);if(HOST&&HOST.api){const r=await fetch(HOST.api+"/p/"+encodeURIComponent(HOST.site)+"/content.json",{cache:"no-store",signal:ac.signal});if(r.ok)got=await r.json()}else if(HOST){const r=await fetch(HOST.db+"/rest/v1/site_content?select=content&site=eq."+encodeURIComponent(HOST.site),{cache:"no-store",signal:ac.signal,headers:{apikey:HOST.key,...(/^sb_/.test(HOST.key)?{}:{Authorization:"Bearer "+HOST.key})}});if(r.ok){const j=await r.json();if(j&&j[0]&&j[0].content)got=j[0].content}}}catch(e){}
   try{if(!got){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);const r=await fetch("content.json",{cache:"no-store",signal:ac.signal});clearTimeout(tm);if(r.ok)got=await r.json()}}catch(e){}
   if(got)saved=merge(DEFAULT,got);renderSite(saved)})();
 })();
