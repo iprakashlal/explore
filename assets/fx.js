@@ -57,6 +57,12 @@
   var GRAIN = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";
   var CSS = [
     ":root{--fxa:var(--c1,var(--accent,#7c5cff));--fxi:var(--text,#111);--fxd:var(--deep,var(--text,#111));--fxo:var(--on-deep,var(--bg,#fff));--fxe:cubic-bezier(.16,1,.3,1)}",
+    /* "Powered by" badge: always on screen, bottom right, small */
+    ".fx-badge{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:99980;display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 9px;border-radius:999px;background:#0E1118;color:#fff;font:600 11px/1.25 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.01em;text-decoration:none!important;box-shadow:0 8px 22px -10px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:.92;transition:opacity .2s,transform .2s;max-width:calc(100vw - 24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+    ".fx-badge:hover,.fx-badge:focus-visible{opacity:1;transform:translateY(-1px)}",
+    ".fx-badge .fx-bm{display:inline-flex;align-items:center;gap:2px;flex:none}.fx-badge .fx-bm i{display:block;width:7px;height:7px}",
+    ".fx-badge .fx-bm i:nth-child(1){background:#5B7CFF;border-radius:50%}.fx-badge .fx-bm i:nth-child(2){background:#FF6A3D}.fx-badge .fx-bm i:nth-child(3){background:#FFC83A;clip-path:polygon(50% 0,100% 100%,0 100%)}",
+    "@media print{.fx-badge{display:none}}",
     /* overlay */
     ".fx-ov{position:fixed;pointer-events:none;z-index:99970;inset:0}",
     "html[data-overlay=grain] .fx-ov{inset:-60%;background-image:url(\"" + GRAIN + "\");opacity:.085;animation:fxgrain .9s steps(5) infinite}",
@@ -510,10 +516,37 @@
   }
 
   /** Call after every render. opts.root: the element holding the site; opts.brand: name for the loader. */
+  /* "Powered by" badge. Its look comes from the Studio (window.SITE_BADGE, assets/badge.js); each site only
+     says whether it shows (content.poweredBy.show === false hides it, set in the Studio). */
+  var BADGE = { text: "Powered by Picaffectz", url: "https://iprakashlal.github.io/studio/#/themes", size: "m", bg: "#0E1118", fg: "#FFFFFF", icon: "mark" };
+  var BSIZE = { s: [10, 4, 9, 11], m: [11, 5, 11, 14], l: [13, 7, 14, 18] }; // font, pad-y, pad-x, icon
+  function badge(b) {
+    b = b || {};
+    var a = document.querySelector(".fx-badge");
+    if (b.show === false) { if (a) a.remove(); return; }
+    var g = {}, k, w = window.SITE_BADGE || {};
+    for (k in BADGE) g[k] = BADGE[k];
+    for (k in w) if (w[k] != null && w[k] !== "") g[k] = w[k];
+    if (b.design) for (k in b.design) if (b.design[k] != null && b.design[k] !== "") g[k] = b.design[k]; // Studio preview
+    var url = /^https?:\/\//i.test(String(g.url)) ? String(g.url) : BADGE.url, text = String(g.text || "").trim() || BADGE.text, z = BSIZE[g.size] || BSIZE.m;
+    var hex = function (v, d) { return /^#[0-9a-f]{6}$/i.test(String(v || "")) ? v : d; };
+    if (!a) { a = document.createElement("a"); a.className = "fx-badge"; a.target = "_blank"; a.rel = "noopener"; a.innerHTML = '<span class="fx-bm" aria-hidden="true"></span><span class="fx-bt"></span>'; document.body.appendChild(a); }
+    a.href = url; a.setAttribute("aria-label", text); a.querySelector(".fx-bt").textContent = text;
+    a.style.cssText = "font-size:" + z[0] + "px;padding:" + z[1] + "px " + (z[2] + 2) + "px " + z[1] + "px " + z[2] + "px;background:" + hex(g.bg, BADGE.bg) + ";color:" + hex(g.fg, BADGE.fg) + "!important;gap:" + Math.round(z[3] / 2) + "px";
+    var m = a.querySelector(".fx-bm"), ic = g.icon === "custom" && /^data:image\/(png|jpeg|webp|svg\+xml);base64,/.test(g.iconData || "") ? "custom" : g.icon === "none" ? "none" : "mark";
+    if (m.getAttribute("data-k") !== ic + (ic === "custom" ? g.iconData.length : "") + z[3]) {
+      m.setAttribute("data-k", ic + (ic === "custom" ? g.iconData.length : "") + z[3]);
+      m.style.display = ic === "none" ? "none" : "";
+      if (ic === "custom") { m.innerHTML = ""; var im = document.createElement("img"); im.src = g.iconData; im.alt = ""; im.style.cssText = "display:block;width:" + z[3] + "px;height:" + z[3] + "px;border-radius:3px;object-fit:cover"; m.appendChild(im); }
+      else if (ic === "mark") { var d = Math.round(z[3] / 2); m.innerHTML = "<i></i><i></i><i></i>"; [].forEach.call(m.children, function (i) { i.style.width = i.style.height = d + "px"; }); }
+    }
+  }
+
   function init(opts) {
     opts = opts || {};
     var root = opts.root || document.body;
     ensureStyle(); wire();
+    try { badge(opts.badge); } catch (e) {}
     var c = cfg(), sig = JSON.stringify(c), changed = sig !== st.sig;
     st.brand = opts.brand || st.brand || document.title;
     st.sig = sig;

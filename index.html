@@ -978,9 +978,9 @@ html[data-hero-art=none] .stage-wrap #stage:not([data-gfx]){display:none}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="assets/fx.js?v=190b1f9"></script>
-<script src="assets/motifs.js?v=190b1f9"></script>
-<script src="assets/layouts.js?v=190b1f9"></script>
+<script src="assets/badge.js?v=648b227"></script><script src="assets/fx.js?v=648b227"></script>
+<script src="assets/motifs.js?v=648b227"></script>
+<script src="assets/layouts.js?v=648b227"></script>
 <script>
 (()=>{
 "use strict";
@@ -1471,7 +1471,7 @@ function renderSite(c){
   if(K){renderKit(c,K)}else{
   siteRoot.innerHTML=`<div id="siteInner">${siteHTML(c)}</div>`;
   initSite(c);}
-  if(window.SiteFX)try{window.SiteFX.init({root:$("#siteInner"),brand:c.theme.introTitle||c.brand.logoText})}catch(e){}
+  if(window.SiteFX)try{window.SiteFX.init({root:$("#siteInner"),brand:c.theme.introTitle||c.brand.logoText,badge:c.poweredBy})}catch(e){}
   setIcon(c);fitLines();
 }
 /* the browser-tab icon: initials in the primary colour, in the chosen shape (0 = square, 50 = circle) */
