@@ -3,11 +3,66 @@
   "name": "Prakash Lal",
   "version": 8,
   "admin": "admin.html",
-  "exportedAt": "2026-11-13T08:22:08.369Z",
+  "exportedAt": "2026-11-13T09:08:13.456Z",
   "generator": "Site Studio",
   "studioBuild": {
-    "id": "648b227",
-    "at": "2026-11-13T08:17:41.420Z"
+    "id": "35ea324",
+    "at": "2026-11-13T08:54:26.639Z"
   },
-  "badge": "1hp4z3o"
+  "badge": "1hp4z3o",
+  "menu": {
+    "items": [
+      {
+        "id": "look"
+      },
+      {
+        "id": "velocity"
+      },
+      {
+        "id": "theme"
+      },
+      {
+        "id": "layout",
+        "label": "Menu & sections"
+      },
+      {
+        "id": "linkedin"
+      },
+      {
+        "id": "hero"
+      },
+      {
+        "id": "about"
+      },
+      {
+        "id": "skills"
+      },
+      {
+        "id": "work"
+      },
+      {
+        "id": "projects"
+      },
+      {
+        "id": "learning"
+      },
+      {
+        "id": "contact"
+      },
+      {
+        "id": "seo"
+      },
+      {
+        "id": "cms"
+      },
+      {
+        "id": "backup"
+      },
+      {
+        "id": "account"
+      }
+    ],
+    "studio": true
+  },
+  "menuV": "6dapgw"
 }
