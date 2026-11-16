@@ -6,6 +6,7 @@
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Prakash Lal · Senior Lead Software Engineer || Bandhan Group</title>
 <!-- site-meta -->
+<link rel="icon" href="assets/uploads/1794473523838-img-0168.png">
 <meta name="description" content="Software Engineer">
 <meta name="keywords" content="prakash, frontend, engineer">
 <meta name="author" content="Prakash Lal">
@@ -983,10 +984,10 @@ html[data-hero-art=none] .stage-wrap #stage:not([data-gfx]){display:none}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="assets/badge.js?v=0be36c3"></script><script src="assets/fx.js?v=0be36c3"></script>
-<script src="assets/motifs.js?v=0be36c3"></script>
-<script src="assets/layouts.js?v=0be36c3"></script>
-<script src="assets/pages.js?v=0be36c3"></script>
+<script src="assets/badge.js?v=136c773"></script><script src="assets/fx.js?v=136c773"></script>
+<script src="assets/motifs.js?v=136c773"></script>
+<script src="assets/layouts.js?v=136c773"></script>
+<script src="assets/pages.js?v=136c773"></script>
 <script>
 (()=>{
 "use strict";
@@ -1473,15 +1474,60 @@ function renderSite(c){
   {const one=x=>String(x||"").replace(/\s*\n\s*/g," ").trim();document.title=one(c.seo.title||c.brand.logoText);
    if(!PREVIEW){const set=(a,k,v)=>{let m=document.head.querySelector(`meta[${a}="${k}"]`);if(!v){if(m)m.remove();return}if(!m){m=document.createElement("meta");m.setAttribute(a,k);document.head.appendChild(m)}m.setAttribute("content",v)};
     const d=one(c.seo.description);set("name","description",d);set("property","og:title",document.title);set("property","og:description",d);set("name","theme-color",/^#[0-9a-f]{3,8}$/i.test(c.seo.themeColor||"")?c.seo.themeColor:"")}}
+  if(maintGate(c))return;
   if(spPage(c))return;
   const K=KIT!=="classic"&&window.SiteLayouts&&SiteLayouts.kits[KIT];
   if(K){renderKit(c,K)}else{
   siteRoot.innerHTML=`<div id="siteInner">${siteHTML(c)}</div>`;
   initSite(c);}
-  heroSlides(c);spLinks(c);
+  heroSlides(c);spLinks(c);menu(c);consent(c);addons(c);festival(c);
   if(window.SiteFX)try{window.SiteFX.init({root:$("#siteInner"),brand:c.theme.introTitle||c.brand.logoText,badge:c.poweredBy})}catch(e){}
   setIcon(c);fitLines();
 }
+/* Features (assets/addons.js): chat button, badge, custom code and the custom API for form entries. */
+let adP;
+function addons(c){
+  const A=c.addons||{},any=(A.chat&&A.chat.on)||(A.badge&&A.badge.on)||(A.api&&A.api.on)||(A.code||[]).some(x=>x&&x.on!==false&&x.code);
+  if(!any&&!window.SiteAddons)return;
+  (adP||(adP=new Promise((ok,no)=>{if(window.SiteAddons)return ok();const s=document.createElement("script");s.src="assets/addons.js";s.onload=()=>ok();s.onerror=no;document.head.appendChild(s)})))
+    .then(()=>SiteAddons.mount(c,{preview:PREVIEW,home:!(window.SitePages&&SitePages.here()),site:c.brand.logoText})).catch(()=>{})}
+/* Cookie consent (assets/consent.js): the banner that asks before analytics, marketing and other optional code runs. */
+let csP;
+function consent(c){
+  if(!(c.consent||{}).on&&!window.SiteConsent)return;
+  (csP||(csP=new Promise((ok,no)=>{if(window.SiteConsent)return ok();const s=document.createElement("script");s.src="assets/consent.js";s.onload=()=>ok();s.onerror=no;document.head.appendChild(s)})))
+    .then(()=>SiteConsent.mount(c,{preview:PREVIEW,pageUrl:id=>{const S=window.SitePages,p=S&&S.list(c).find(x=>x.id===id);return p?"./?p="+encodeURIComponent(S.slug(p)):""}})).catch(()=>{})}
+/* The owner's own menu with sub-menus (assets/menu.js), in place of the automatic links of whichever layout shows. */
+let mnP;
+const MENU_NAVS=[".nav ul","#vxMenu nav",".ks-top nav",".kt-nav",".kp-top nav",".ke-mast nav"];
+function menu(c){
+  const M=c.menu||{};if(!(M.custom&&(M.items||[]).some(i=>i&&i.show!==false&&String(i.label||"").trim())))return;
+  const done=()=>{const w=document.getElementById("sm-wait");if(w)w.remove()};
+  if(!window.SiteMenu&&!document.getElementById("sm-wait")){const w=document.createElement("style");w.id="sm-wait";w.textContent=MENU_NAVS.join(",")+"{visibility:hidden}";document.head.appendChild(w);setTimeout(done,2500)}
+  const go=it=>{const t=it.to||"";
+    if(t==="none")return{url:""};
+    if(t==="url"){const u=String(it.url||"").trim();return{url:/^(https?:|mailto:|tel:|#|\/|\.\/|\?)/i.test(u)?u:""}}
+    if(t==="page"){const S=window.SitePages,p=S&&S.list(c).find(x=>x.id===it.page);return{url:p?"./?p="+encodeURIComponent(S.slug(p)):""}}
+    if(t==="top")return{url:"#top"};
+    const s=c.sections.find(x=>x.id===t);return{url:s&&s.visible?"#"+t:""}};
+  (mnP||(mnP=new Promise((ok,no)=>{if(window.SiteMenu)return ok();const s=document.createElement("script");s.src="assets/menu.js";s.onload=()=>ok();s.onerror=no;document.head.appendChild(s)})))
+    .then(()=>{SiteMenu.mount(c,{navs:MENU_NAVS,resolve:go,onPick:()=>{const b=document.getElementById("vxMbtn");if(b&&b.getAttribute("aria-expanded")==="true")b.click()}});done()}).catch(done)}
+/* Festival overlay (assets/festival.js): greetings on India's festivals, when the Studio offered it to this site. */
+let fsP;
+function festival(c){
+  const F=c.festival||{};if(!(F.allowed&&F.on!==false)&&!window.SiteFestival)return;
+  (fsP||(fsP=new Promise((ok,no)=>{if(window.SiteFestival)return ok();const s=document.createElement("script");s.src="assets/festival.js";s.onload=()=>ok();s.onerror=no;document.head.appendChild(s)})))
+    .then(()=>SiteFestival.mount(c,{preview:PREVIEW,site:c.brand.logoText})).catch(()=>{})}
+/* Maintenance mode (assets/maint.js): while content.maintenance.on visitors see the maintenance page; the editor's
+   preview shows it only on its "Maintenance page" entry (?maintenance=1). */
+const MNT_Q=/[?&]maintenance=1(&|$)/.test(location.search);let mntP,mntPass=false;
+function maintGate(c){
+  const on=(PREVIEW&&MNT_Q)||!!(c.maintenance||{}).on;
+  if(!on||mntPass){if(window.SiteMaint)SiteMaint.hide();return false}
+  (mntP||(mntP=new Promise((ok,no)=>{if(window.SiteMaint)return ok();const s=document.createElement("script");s.src="assets/maint.js";s.onload=()=>ok();s.onerror=no;document.head.appendChild(s)})))
+    .then(()=>{if(SiteMaint.wanted(c,PREVIEW))SiteMaint.show(c,{name:c.brand.logoText,logo:c.brand.icon&&imgUrl(c.brand.icon),preview:PREVIEW,again:()=>renderSite(c)});else{mntPass=true;renderSite(c)}})
+    .catch(()=>{mntPass=true;renderSite(c)});
+  return true}
 /* static pages (assets/pages.js): ./?p=<name> shows a reading page (privacy, terms…) instead of the portfolio */
 function spPage(c){
   const S=window.SitePages,slug=S&&S.here();if(!slug)return false;
@@ -1489,7 +1535,7 @@ function spPage(c){
   if(p){const one=x=>String(x||"").replace(/\s*\n\s*/g," ").trim();document.title=one((c.seo.titlePattern||"{page} · {site}").replace(/\{page\}/g,one(p.title)).replace(/\{site\}/g,one(name)))}
   const links=S.list(c).filter(x=>x.inFooter!==false);
   siteRoot.innerHTML=`<div id="siteInner"><header class="sp-top"><a href="./">${esc(name)}</a><a class="sp-back" href="./">← ${esc((c.labels&&c.labels.backHome)||"Back")}</a></header><main id="main">${p?S.article(p,{preview:PREVIEW}):S.missing({home:"./"})}</main>${links.length?`<nav class="sp-links" aria-label="Pages">${links.map(x=>`<a href="?p=${encodeURIComponent(S.slug(x))}">${esc(x.navLabel||x.title)}</a>`).join("")}</nav>`:""}<footer class="sp-links"><span>${esc(c.contact.footerLeft||"")}</span></footer></div>`;
-  S.after(p);setIcon(c);return true}
+  S.after(p);setIcon(c);consent(c);addons(c);festival(c);return true}
 /* links to the static pages under every layout's footer */
 function spLinks(c){const S=window.SitePages;if(!S)return;const links=S.list(c).filter(x=>x.inFooter!==false);if(!links.length)return;
   const n=document.createElement("nav");n.className="sp-links";n.setAttribute("aria-label","Pages");S.css();
@@ -1686,7 +1732,7 @@ if(PREVIEW){
     const d=e.data||{};
     if(d.type==="cms:content"&&d.content&&typeof d.content==="object"){ASSETS=d.assets||{};const y=scrollY;saved=merge(DEFAULT,d.content);renderSite(saved);scrollTo(0,y)}
   });
-  window.parent.postMessage({type:"cms:ready",page:"index.html"+(window.SitePages&&SitePages.here()?"?p="+encodeURIComponent(SitePages.here()):"")},location.origin);
+  window.parent.postMessage({type:"cms:ready",page:"index.html"+(window.SitePages&&SitePages.here()?"?p="+encodeURIComponent(SitePages.here()):MNT_Q?"?maintenance=1":"")},location.origin);
 }
 if(PREVIEW)renderSite(saved);
 else(async()=>{let got=null;try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);if(HOST&&HOST.api){const r=await fetch(HOST.api+"/p/"+encodeURIComponent(HOST.site)+"/content.json",{cache:"no-store",signal:ac.signal});if(r.ok)got=await r.json()}else if(HOST){const r=await fetch(HOST.db+"/rest/v1/site_content?select=content&site=eq."+encodeURIComponent(HOST.site),{cache:"no-store",signal:ac.signal,headers:{apikey:HOST.key,...(/^sb_/.test(HOST.key)?{}:{Authorization:"Bearer "+HOST.key})}});if(r.ok){const j=await r.json();if(j&&j[0]&&j[0].content)got=j[0].content}}}catch(e){}
