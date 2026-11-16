@@ -1,13 +1,13 @@
 {
   "template": "portfolio",
   "name": "Prakash Lal",
-  "version": 25,
+  "version": 28,
   "admin": "admin.html",
-  "exportedAt": "2026-11-16T19:19:45.718Z",
+  "exportedAt": "2026-11-16T20:37:18.600Z",
   "generator": "Site Studio",
   "studioBuild": {
-    "id": "1a62a68",
-    "at": "2026-11-16T19:08:31.032Z"
+    "id": "b727c27",
+    "at": "2026-11-16T20:31:33.632Z"
   },
   "badge": "1i8r1v1",
   "menu": {
@@ -24,6 +24,10 @@
       {
         "id": "layout",
         "label": "Menu & sections"
+      },
+      {
+        "id": "menu",
+        "label": "Nested Menu Setup"
       },
       {
         "id": "linkedin"
@@ -50,6 +54,21 @@
         "id": "contact"
       },
       {
+        "id": "static-pages"
+      },
+      {
+        "id": "emails"
+      },
+      {
+        "id": "features"
+      },
+      {
+        "id": "consent"
+      },
+      {
+        "id": "festival"
+      },
+      {
         "id": "seo"
       },
       {
@@ -64,5 +83,5 @@
     ],
     "studio": true
   },
-  "menuV": "6dapgw"
+  "menuV": "12a9wsx"
 }

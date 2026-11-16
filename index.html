@@ -984,10 +984,10 @@ html[data-hero-art=none] .stage-wrap #stage:not([data-gfx]){display:none}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="assets/badge.js?v=1a62a68"></script><script src="assets/fx.js?v=1a62a68"></script>
-<script src="assets/motifs.js?v=1a62a68"></script>
-<script src="assets/layouts.js?v=1a62a68"></script>
-<script src="assets/pages.js?v=1a62a68"></script>
+<script src="assets/badge.js?v=b727c27"></script><script src="assets/fx.js?v=b727c27"></script>
+<script src="assets/motifs.js?v=b727c27"></script>
+<script src="assets/layouts.js?v=b727c27"></script>
+<script src="assets/pages.js?v=b727c27"></script>
 <script>
 (()=>{
 "use strict";
@@ -1515,7 +1515,7 @@ function menu(c){
 /* Festival overlay (assets/festival.js): greetings on India's festivals, when the Studio offered it to this site. */
 let fsP;
 function festival(c){
-  const F=c.festival||{};if(!(F.allowed&&F.on!==false)&&!window.SiteFestival)return;
+  const F=c.festival||{};if(!(F.on!==false&&(F.v>=2||F.allowed))&&!window.SiteFestival)return;
   (fsP||(fsP=new Promise((ok,no)=>{if(window.SiteFestival)return ok();const s=document.createElement("script");s.src="assets/festival.js";s.onload=()=>ok();s.onerror=no;document.head.appendChild(s)})))
     .then(()=>SiteFestival.mount(c,{preview:PREVIEW,site:c.brand.logoText})).catch(()=>{})}
 /* Maintenance mode (assets/maint.js): while content.maintenance.on visitors see the maintenance page; the editor's
