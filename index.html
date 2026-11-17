@@ -984,10 +984,10 @@ html[data-hero-art=none] .stage-wrap #stage:not([data-gfx]){display:none}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="assets/badge.js?v=82e5a04"></script><script src="assets/fx.js?v=82e5a04"></script>
-<script src="assets/motifs.js?v=82e5a04"></script>
-<script src="assets/layouts.js?v=82e5a04"></script>
-<script src="assets/pages.js?v=82e5a04"></script>
+<script src="assets/badge.js?v=da3b9ee"></script><script src="assets/fx.js?v=da3b9ee"></script>
+<script src="assets/motifs.js?v=da3b9ee"></script>
+<script src="assets/layouts.js?v=da3b9ee"></script>
+<script src="assets/pages.js?v=da3b9ee"></script>
 <script>
 (()=>{
 "use strict";
@@ -1048,13 +1048,14 @@ function pimg(k,alt,w,cls){return window.SiteMotifs?SiteMotifs.img(PACK(),k,alt,
 function itemImg(item,k,alt,w,cls){return item&&item.image?`<img src="${esc(imgUrl(item.image))}" alt="${esc(alt||"")}" loading="lazy" class="${cls||""}">`:pimg(k,alt,w,cls)}
 const moOn=()=>MOTIF!=="geometric"&&!!window.SiteMotifs&&SiteMotifs.has(MOTIF);
 function moAccent(color){const s=String(color).toLowerCase();return s.includes("c3")||s===String(CT.c3||"").toLowerCase()?"var(--c2)":"var(--c3)"}
-function logoIc(c,cls){const B=c.brand||{};if(!B.icon||B.iconInMenu===false)return "";const rad=Math.max(0,Math.min(50,c.theme.logoRadius??22));
+function logoIc(c,cls){const B=c.brand||{};if((!B.icon&&!B.logoVideo)||B.iconInMenu===false)return "";const rad=Math.max(0,Math.min(50,c.theme.logoRadius??22));
   /* size and shape (Brand → Logo icon): only set when changed, so each layout keeps its own size otherwise */
   const h=Math.max(16,Math.min(96,+B.logoSize||30)),wide=B.logoFit==="wide";
   const css=wide?`height:${h}px;width:auto;max-width:min(${h*6}px,52vw);object-fit:contain;border-radius:0;background:none`:`border-radius:${rad}%${h!==30?`;width:${h}px;height:${h}px`:""}`;
+  if(B.logoVideo)return `<video class="logo-ic${cls?" "+cls:""}" src="${esc(imgUrl(B.logoVideo))}"${B.icon?` poster="${esc(imgUrl(B.icon))}"`:""} autoplay muted loop playsinline aria-hidden="true" style="${css}"></video>`;
   return `<img class="logo-ic${cls?" "+cls:""}" src="${esc(imgUrl(B.icon))}" alt="" style="${css}">`}
 /* the logo above the name in the hero (Brand → Logo icon → above the name) */
-function heroLogo(c){const B=c.brand||{};if(window.SiteLogo)SiteLogo.hero(B.logoOnHero&&B.icon?imgUrl(B.icon):"",{size:B.heroLogoSize,radius:c.theme.logoRadius??22,wide:B.logoFit==="wide",edit:"brand.icon"})}
+function heroLogo(c){const B=c.brand||{};if(window.SiteLogo)SiteLogo.hero(B.logoOnHero&&B.icon?imgUrl(B.icon):"",{video:B.logoOnHero&&B.logoVideo?imgUrl(B.logoVideo):"",size:B.heroLogoSize,radius:c.theme.logoRadius??22,wide:B.logoFit==="wide",edit:"brand.icon"})}
 /* The hero's picture (Brand & theme → Logo icon → on the hero): the disc image, else the logo icon. Older
    projects' Hero photo still counts until the project is saved again (it then moves to the disc image). */
 function heroPic(c){const B=c.brand||{},H=c.hero||{};if(H.photo)return H.photo;if(B.iconOnHero===false)return null;return H.discImage||B.icon||null}
@@ -1574,7 +1575,7 @@ function spLinks(c){const S=window.SitePages;if(!S)return;const links=S.list(c).
 /* hero background slides (assets/slides.js, loaded when switched on) */
 let slP,slGen=0;
 function heroSlides(c){const S=c.hero&&c.hero.slides,g=++slGen,host=document.querySelector("#hero,.kp-hero,.ks-hero,.kt-hero");
-  if(!host||!S||!S.enabled||!(S.items||[]).some(x=>x&&x.image)){if(window.SiteSlides)SiteSlides.stop();return}
+  if(!host||!S||!S.enabled||!(S.items||[]).some(x=>x&&(x.image||x.video))){if(window.SiteSlides)SiteSlides.stop();return}
   (slP||=new Promise((ok,no)=>{if(window.SiteSlides)return ok(window.SiteSlides);const e=document.createElement("script");e.src="assets/slides.js";e.onload=()=>ok(window.SiteSlides);e.onerror=no;document.head.appendChild(e)}))
   .then(w=>{if(g===slGen)w.mount(host,S,{imgUrl,title:".eyebrow",text:".h-role",hide:".stage-wrap,#net,.vx-portrait"})}).catch(()=>{})}
 /* the browser-tab icon: initials in the primary colour, in the chosen shape (0 = square, 50 = circle) */
@@ -1765,7 +1766,7 @@ if(PREVIEW){
   window.parent.postMessage({type:"cms:ready",page:"index.html"+(window.SitePages&&SitePages.here()?"?p="+encodeURIComponent(SitePages.here()):MNT_Q?"?maintenance=1":"")},location.origin);
 }
 if(PREVIEW)renderSite(saved);
-else(async()=>{let got=null;try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);if(HOST&&HOST.api){const r=await fetch(HOST.api+"/p/"+encodeURIComponent(HOST.site)+"/content.json",{cache:"no-store",signal:ac.signal});if(r.ok)got=await r.json()}else if(HOST){const r=await fetch(HOST.db+"/rest/v1/site_content?select=content&site=eq."+encodeURIComponent(HOST.site),{cache:"no-store",signal:ac.signal,headers:{apikey:HOST.key,...(/^sb_/.test(HOST.key)?{}:{Authorization:"Bearer "+HOST.key})}});if(r.ok){const j=await r.json();if(j&&j[0]&&j[0].content)got=j[0].content}}}catch(e){}
+else(async()=>{let got=null;if(window.SiteSkeleton)SiteSkeleton.show(document.getElementById("siteRoot"));/* the page's outline while the content is fetched */try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);if(HOST&&HOST.api){const r=await fetch(HOST.api+"/p/"+encodeURIComponent(HOST.site)+"/content.json",{cache:"no-store",signal:ac.signal});if(r.ok)got=await r.json()}else if(HOST){const r=await fetch(HOST.db+"/rest/v1/site_content?select=content&site=eq."+encodeURIComponent(HOST.site),{cache:"no-store",signal:ac.signal,headers:{apikey:HOST.key,...(/^sb_/.test(HOST.key)?{}:{Authorization:"Bearer "+HOST.key})}});if(r.ok){const j=await r.json();if(j&&j[0]&&j[0].content)got=j[0].content}}}catch(e){}
   try{if(!got){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);const r=await fetch("content.json",{cache:"no-store",signal:ac.signal});clearTimeout(tm);if(r.ok)got=await r.json()}}catch(e){}
   if(got)saved=merge(DEFAULT,got);renderSite(saved)})();
 })();
