@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@400;600;800&display=swap">
 <link rel="stylesheet" id="fontlink" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&display=swap">
-<style>
+<style id="main-css">
 /* Layout: one page, two views. The site is a Bauhaus construction kit on a blueprint sheet, rendered from editable content; #admin is a calm two-pane control room. Site tokens are rewritten live by the theme editor; panel tokens stay fixed so it is always legible. */
 :root{
   --bg:#0A1830;--surface:#0F2142;--deep:#06101F;--text:#E9EEF6;--soft:#93A6C4;--line:#2A4A7A;
@@ -995,13 +995,16 @@ html[data-hero-art=none] .stage-wrap #stage:not([data-gfx]){display:none}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="assets/badge.js?v=76e771a"></script><script src="assets/fx.js?v=76e771a"></script>
-<script src="assets/motifs.js?v=76e771a"></script>
-<script src="assets/layouts.js?v=76e771a"></script>
-<script src="assets/pages.js?v=76e771a"></script>
-<script>
+<script src="assets/badge.js?v=837d2f9"></script><script src="assets/fx.js?v=837d2f9"></script>
+<script src="assets/motifs.js?v=837d2f9"></script>
+<script src="assets/layouts.js?v=837d2f9"></script>
+<script src="assets/pages.js?v=837d2f9"></script>
+<script id="main-js">
 (()=>{
 "use strict";
+/* Code Update (content.code): when the site runs its own copy of this code, SiteCode (fx.js) takes the page over before anything is drawn. */
+const SC=typeof SiteCode==="undefined"||!SiteCode?null:SiteCode;if(SC)SC.track();
+const SCO={css:"#main-css",js:""};let DREW=false;
 /* ============================================================
    DEFAULT CONTENT
    ============================================================ */
@@ -1105,14 +1108,15 @@ function applyTheme(t){
   r.setProperty("--fb",`"${t.fontBody}","Helvetica Neue",Arial,sans-serif`);
   if(window.SiteFonts){const cd=SiteFonts.use(t,"display",imgUrl),cb=SiteFonts.use(t,"body",imgUrl);if(cd)r.setProperty("--fd",`"${cd}","${t.fontDisplay}","Arial Black",sans-serif`);if(cb)r.setProperty("--fb",`"${cb}","${t.fontBody}","Helvetica Neue",Arial,sans-serif`)}
   /* one stylesheet per family, so a family Google can't serve never blocks the other */
+  const FOK=!(window.SiteFX&&window.SiteFX.fontsOk)||window.SiteFX.fontsOk(saved);/* Google Fonts wait for consent when the site says so */
   [[FONTS_D[t.fontDisplay],"fontlink"],[FONTS_B[t.fontBody],"fontlink2"]].forEach(([f,id])=>{
     let l=document.getElementById(id);if(!l){l=document.createElement("link");l.id=id;l.rel="stylesheet";document.head.appendChild(l)}
-    const href=f?"https://fonts.googleapis.com/css2?family="+f+"&display=swap":"";if(href&&l.getAttribute("href")!==href)l.setAttribute("href",href)});
+    const href=f&&FOK?"https://fonts.googleapis.com/css2?family="+f+"&display=swap":"";if(href&&l.getAttribute("href")!==href)l.setAttribute("href",href);if(!FOK)l.removeAttribute("href")});
   if(!PREVIEW)try{localStorage.setItem("site-fonts:"+location.pathname.replace(/[^/]*$/,""),JSON.stringify(["fontlink","fontlink2"].map(id=>[id,(document.getElementById(id)||{}).href||""])))}catch(e){}
   CT=t;MOTIF=window.SiteMotifs?SiteMotifs.resolve(t,"tech"):"geometric";
   KIT=resolveKit(t);document.documentElement.dataset.kit=KIT;
   const d=document.documentElement.dataset;d.motif=moOn()?MOTIF:"geometric";
-  for(const k of ["layout","heroArt","nav","cards","buttons","motionStyle","pattern","ornament","heading","shead","width","about","skills","work","cursor","loader","textfx","hoverfx","scrollfx","overlay"])d[k]=String(t[k]||"");
+  for(const k of ["layout","heroArt","nav","cards","buttons","motionStyle","pattern","ornament","heading","shead","width","about","skills","work","cursor","loader","textfx","hoverfx","scrollfx","overlay","herofx"])d[k]=String(t[k]||"");
   d.menu=String(t.navMode||"");d.menumob=String(t.navModeMob||"");
   d.scrollease=t.scrollEase||"light";d.linebreaks=t.lineBreaks||"typed";d.introfont=t.introFont||"display";d.introcase=t.introCase||"upper";
 }
@@ -1513,9 +1517,10 @@ function renderSite(c){
   const K=KIT!=="classic"&&window.SiteLayouts&&SiteLayouts.kits[KIT];
   if(K){renderKit(c,K)}else{
   siteRoot.innerHTML=`<div id="siteInner">${siteHTML(c)}</div>`;
+  if(SC&&SC.drawn)SC.drawn(siteRoot,c);
   initSite(c);}
   heroSlides(c);heroLogo(c);video(c);social(c);spLinks(c);menu(c);lang(c);consent(c);addons(c);festival(c);
-  if(window.SiteFX)try{window.SiteFX.init({root:$("#siteInner"),brand:c.theme.introTitle||c.brand.logoText,badge:c.poweredBy})}catch(e){}
+  if(window.SiteFX)try{window.SiteFX.init({root:$("#siteInner"),brand:c.theme.introTitle||c.brand.logoText,badge:c.poweredBy,bgs:c.sectionBg,asset:imgUrl,fonts:FONTS,c:c,policy:"",again:()=>renderSite(saved)})}catch(e){}
   setIcon(c);fitLines();
   // Links inside the page follow the sections: to a section's own page, or back to the main page from one.
   if(SOLO.set.size)document.querySelectorAll('#siteRoot a[href^="#"]').forEach(a=>{const id=a.getAttribute("href").slice(1);if(SOLO.set.has(id)&&id!==SOLO.cur)a.setAttribute("href","./?s="+encodeURIComponent(id));else if(SOLO.cur&&id!==SOLO.cur&&(SOLO.vis.has(id)||id==="top"))a.setAttribute("href",id==="top"?"./":"./#"+id)});
@@ -1645,6 +1650,7 @@ function renderKit(c,K){
     photo:(k,w)=>window.SiteMotifs?SiteMotifs.photo(PACK(),k,w):"",pimg,itemImg,
     copy:tx=>{try{navigator.clipboard.writeText(tx).then(()=>toast("Copied: "+tx),()=>toast(tx))}catch(e){toast(tx)}}};
   siteRoot.innerHTML=`<div id="siteInner" class="kit k-${KIT}">${K.render(c,h)}</div>`;
+  if(SC&&SC.drawn)SC.drawn(siteRoot,c);
   try{fx.kitStop=K.init&&K.init($("#siteInner"),c,h)}catch(e){console.error(e)}
 }
 function initSite(c){
@@ -1795,14 +1801,16 @@ if(PREVIEW){
   addEventListener("message",e=>{
     if(e.origin!==location.origin||e.source!==window.parent)return;
     const d=e.data||{};
-    if(d.type==="cms:content"&&d.content&&typeof d.content==="object"){ASSETS=d.assets||{};const y=scrollY;saved=merge(DEFAULT,d.content);renderSite(saved);scrollTo(0,y)}
+    if(d.type==="cms:content"&&d.content&&typeof d.content==="object"){if(SC&&SC.take(d.content,{...SCO,drawn:DREW}))return;DREW=true;ASSETS=d.assets||{};const y=scrollY;saved=merge(DEFAULT,d.content);renderSite(saved);scrollTo(0,y)}
   });
   window.parent.postMessage({type:"cms:ready",page:"index.html"+(window.SitePages&&SitePages.here()?"?p="+encodeURIComponent(SitePages.here()):MNT_Q?"?maintenance=1":"")},location.origin);
 }
-if(PREVIEW)renderSite(saved);
+if(PREVIEW){if(!(SC&&SC.wait())){DREW=true;renderSite(saved)}}
 else(async()=>{let got=null;if(window.SiteSkeleton)SiteSkeleton.show(document.getElementById("siteRoot"));/* the page's outline while the content is fetched */try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);if(HOST&&HOST.api){const r=await fetch(HOST.api+"/p/"+encodeURIComponent(HOST.site)+"/content.json",{cache:"no-store",signal:ac.signal});if(r.ok)got=await r.json()}else if(HOST){const r=await fetch(HOST.db+"/rest/v1/site_content?select=content&site=eq."+encodeURIComponent(HOST.site),{cache:"no-store",signal:ac.signal,headers:{apikey:HOST.key,...(/^sb_/.test(HOST.key)?{}:{Authorization:"Bearer "+HOST.key})}});if(r.ok){const j=await r.json();if(j&&j[0]&&j[0].content)got=j[0].content}}}catch(e){}
   try{if(!got){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);const r=await fetch("content.json",{cache:"no-store",signal:ac.signal});clearTimeout(tm);if(r.ok)got=await r.json()}}catch(e){}
+  if(got&&SC&&SC.take(got,{...SCO,text:JSON.stringify(got)}))return;
   if(got)saved=merge(DEFAULT,got);renderSite(saved)})();
+if(SC)SC.untrack();
 })();
 </script>
 

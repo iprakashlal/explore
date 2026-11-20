@@ -11,6 +11,7 @@
      data-scrollfx  none | progress | smooth | skew | reveal | ring | dots
      data-scrollease light | medium | heavy  (how strongly smooth scrolling eases; mouse wheels only)
    Intro screen colours come from --intro-bg / --intro-fg (falling back to --deep / --on-deep).
+     data-herofx    none | float | breathe | sway | follow | halo | orbit | ripple | sparkle | shine | morph   (a quiet loop on the hero's picture)
      data-overlay   none | grain | scanlines | vignette | paper | halftone | aurora | grid | frame
    Visitors who ask for reduced motion get a still page (only static overlays stay). */
 (function () {
@@ -44,7 +45,7 @@
 
   function cfg() {
     var d = doc.dataset;
-    return { cursor: d.cursor || "none", loader: d.loader || "none", text: d.textfx || "none", hover: d.hoverfx || "none", scroll: d.scrollfx || "none", overlay: d.overlay || "none" };
+    return { cursor: d.cursor || "none", loader: d.loader || "none", text: d.textfx || "none", hover: d.hoverfx || "none", scroll: d.scrollfx || "none", overlay: d.overlay || "none", herofx: d.herofx || "none" };
   }
   function cssVar(n) { return getComputedStyle(doc).getPropertyValue(n).trim(); }
   function colors() {
@@ -214,6 +215,38 @@
     ".fx-tilt:hover>.fx-glare{opacity:1}",
     /* scroll */
     ".fx-prog{position:fixed;left:0;top:0;height:3px;width:100%;z-index:99980;background:var(--fxa);transform-origin:0 50%;transform:scaleX(0);pointer-events:none}",
+    /* Hero graphic effect: loops on the hero's picture. They use translate / rotate / scale (not transform), so they add to
+       whatever the theme's frame or entrance already does. */
+    "html[data-herofx=float] .fx-hg:not(.fx-hg-bg){animation:fxhgfloat 7s ease-in-out infinite alternate}",
+    "html[data-herofx=sway] .fx-hg:not(.fx-hg-bg){animation:fxhgsway 9s ease-in-out infinite alternate;transform-origin:50% 100%}",
+    "html[data-herofx=breathe] .fx-hg.fx-hg-pic :is(img,video){animation:fxhgbreathe 18s ease-in-out infinite alternate;will-change:scale}",
+    "html[data-herofx=breathe] .fx-hg:not(.fx-hg-pic):not(.fx-hg-bg){animation:fxhgbreathe2 9s ease-in-out infinite alternate}",
+    "html[data-herofx=breathe] .fx-hg.fx-hg-bg:not(.fx-hg-pic){animation:fxhgbreathe 18s ease-in-out infinite alternate}",
+    ".fx-hg-clip{overflow-x:clip}.fx-hg-clip:has(>.fx-hg-bg){overflow:clip}",
+    "html[data-herofx=follow] .fx-hg:not(.fx-hg-bg){translate:calc(var(--hx,0)*14px) calc(var(--hy,0)*14px);rotate:calc(var(--hx,0)*1.2deg);transition:translate .9s var(--fxe),rotate .9s var(--fxe)}",
+    "html[data-herofx=follow] .fx-hg.fx-hg-pic :is(img,video){scale:1.06;translate:calc(var(--hx,0)*-10px) calc(var(--hy,0)*-10px);transition:translate 1.2s var(--fxe)}",
+    "html[data-herofx=halo] .fx-hg:not(.fx-hg-bg){animation:fxhghalo 5.5s ease-in-out infinite alternate}",
+    "html[data-herofx=morph] .fx-hg:not(.fx-hg-bg):not(.fx-hg-cut){animation:fxhgmorph 14s ease-in-out infinite;overflow:hidden}",
+    ".fx-hg-shine{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;border-radius:inherit}",
+    ".fx-hg-shine::before{content:\"\";position:absolute;top:-20%;bottom:-20%;left:0;width:34%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.34) 45%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.34) 55%,transparent);transform:translateX(-140%) skewX(-14deg);animation:fxhgshine 6.5s cubic-bezier(.4,0,.2,1) infinite;mix-blend-mode:soft-light}",
+    ".fx-hg-deco{position:absolute;pointer-events:none;z-index:0}.fx-hg-deco.top{z-index:4}",
+    ".fx-hg-deco svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}",
+    ".fx-hg-deco .o1{animation:fxhgspin 38s linear infinite;transform-origin:50% 50%;transform-box:fill-box}.fx-hg-deco .o2{animation:fxhgspin 54s linear infinite reverse;transform-origin:50% 50%;transform-box:fill-box}",
+    ".fx-hg-deco .rp{position:absolute;inset:6%;border-radius:var(--hgr,28px);border:1.5px solid var(--fxa);opacity:0;animation:fxhgripple 5.4s cubic-bezier(.2,.6,.3,1) infinite;animation-delay:calc(var(--n)*1.8s)}",
+    ".fx-hg-deco .sp{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);color:var(--c);opacity:0;animation:fxhgspark var(--d) ease-in-out infinite;animation-delay:var(--w)}",
+    ".fx-hg-deco .sp::before,.fx-hg-deco .sp::after{content:\"\";position:absolute;background:currentColor;border-radius:2px}",
+    ".fx-hg-deco .sp::before{left:42%;right:42%;top:0;bottom:0}.fx-hg-deco .sp::after{top:42%;bottom:42%;left:0;right:0}.fx-hg-deco .sp.dot::before{inset:25%;border-radius:50%}.fx-hg-deco .sp.dot::after{display:none}",
+    "@keyframes fxhgfloat{from{translate:0 -9px}to{translate:0 9px}}",
+    "@keyframes fxhgsway{from{rotate:-1.3deg;translate:-5px 0}to{rotate:1.3deg;translate:5px 0}}",
+    "@keyframes fxhgbreathe{from{scale:1.001;translate:0 0}to{scale:1.085;translate:-1.2% -1%}}",
+    "@keyframes fxhgbreathe2{from{scale:.985}to{scale:1.02}}",
+    "@keyframes fxhghalo{from{filter:drop-shadow(0 10px 22px color-mix(in srgb,var(--fxa) 10%,transparent))}to{filter:drop-shadow(0 16px 46px color-mix(in srgb,var(--fxa) 62%,transparent))}}",
+    "@keyframes fxhgmorph{0%,100%{border-radius:58% 42% 47% 53%/45% 55% 45% 55%}33%{border-radius:44% 56% 60% 40%/56% 42% 58% 44%}66%{border-radius:52% 48% 40% 60%/40% 58% 42% 60%}}",
+    "@keyframes fxhgshine{0%,58%{transform:translateX(-140%) skewX(-14deg)}100%{transform:translateX(440%) skewX(-14deg)}}",
+    "@keyframes fxhgspin{to{rotate:360deg}}",
+    "@keyframes fxhgripple{0%{opacity:0;scale:.92}18%{opacity:.5}100%{opacity:0;scale:1.22}}",
+    "@keyframes fxhgspark{0%,100%{opacity:0;translate:0 8px;scale:.5;rotate:0deg}45%{opacity:.9;scale:1}60%{opacity:.75;translate:0 -10px;rotate:45deg}}",
+    "@media (prefers-reduced-motion:reduce){.fx-hg,.fx-hg *{animation:none!important}.fx-hg-deco,.fx-hg-shine{display:none}}@media print{.fx-hg-deco,.fx-hg-shine{display:none}}",
     ".fx-rv{opacity:0;transform:translateY(34px);transition:opacity .9s var(--fxe),transform 1s var(--fxe)}.fx-rv.fx-rv-in{opacity:1;transform:none}",
     ".fx-top{position:fixed;left:max(14px,env(safe-area-inset-left,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));z-index:99979;width:46px;height:46px;border:0;border-radius:50%;padding:0;cursor:pointer;background:color-mix(in srgb,var(--surface,var(--bg,#fff)) 92%,transparent);color:var(--fxi);box-shadow:0 8px 24px -10px rgba(0,0,0,.45);opacity:0;transform:translateY(10px) scale(.9);pointer-events:none;transition:opacity .35s,transform .45s var(--fxe)}",
     ".fx-top.on{opacity:1;transform:none;pointer-events:auto}.fx-top svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}",
@@ -471,6 +504,7 @@
     st.x = e.clientX; st.y = e.clientY;
     if (!st.seen) { st.seen = true; st.rx = st.x; st.ry = st.y; doc.classList.add("fx-seen"); }
     if (L.spot) { L.spot.style.setProperty("--mx", e.clientX + "px"); L.spot.style.setProperty("--my", e.clientY + "px"); }
+    if (st.hg && cfg().herofx === "follow") { var hr = st.hg.getBoundingClientRect(); if (hr.bottom > 0 && hr.top < innerHeight) { st.hg.style.setProperty("--hx", ((e.clientX - (hr.left + hr.width / 2)) / innerWidth * 2).toFixed(3)); st.hg.style.setProperty("--hy", ((e.clientY - (hr.top + hr.height / 2)) / innerHeight * 2).toFixed(3)); } }
     if (L.cross) { L.cross.style.setProperty("--mx", e.clientX + "px"); L.cross.style.setProperty("--my", e.clientY + "px"); L.cross.lastChild.textContent = Math.round(e.clientX) + " · " + Math.round(e.clientY); }
     if (L.trail) { trail.pts.push({ x: e.clientX, y: e.clientY, t: performance.now() }); if (!trail.run) { trail.run = true; requestAnimationFrame(drawTrail); } }
     var t = e.target && e.target.closest ? e.target : null;
@@ -548,6 +582,41 @@
     var still = Math.abs(s) < 0.02;
     st.skewEls.forEach(function (n) { n.style.transform = still ? "" : "skewY(" + s.toFixed(3) + "deg)"; });
     if (!still || Math.abs(dv) > 0) requestAnimationFrame(skewStep); else sk.run = false;
+  }
+  /* Hero graphic effect: finds the hero's picture or graphic, marks it, and adds the few extra pieces some effects need
+     (a light band inside it, or rings / ripples / sparkles laid around it). */
+  var HERO_G = ".hero .hero-bg, .hero .hero-media, .hero .art, .pf-hero .im, .hero .stage-wrap, #hero .stage-wrap";
+  function setupHeroFx(root, c) {
+    $$(".fx-hg").forEach(function (n) { n.classList.remove("fx-hg", "fx-hg-pic", "fx-hg-bg", "fx-hg-cut"); n.style.removeProperty("--hx"); n.style.removeProperty("--hy"); });
+    $$(".fx-hg-deco,.fx-hg-shine").forEach(function (n) { n.remove(); }); $$(".fx-hg-clip").forEach(function (n) { n.classList.remove("fx-hg-clip"); });
+    if (st.hgRO) { st.hgRO.disconnect(); st.hgRO = null; } st.hg = null;
+    if (c.herofx === "none" || RM) return;
+    var g = $$(HERO_G, root).filter(function (n) { return n.offsetWidth > 60 && n.offsetHeight > 60; })[0]; if (!g) return;
+    var cs = getComputedStyle(g), r = g.getBoundingClientRect();
+    // A picture that is the hero's whole background stays put: only what happens inside it applies.
+    var bg = cs.position === "absolute" || cs.position === "fixed" || r.width >= innerWidth * 0.9;
+    g.classList.add("fx-hg"); if (bg) g.classList.add("fx-hg-bg"); if (cs.clipPath && cs.clipPath !== "none") g.classList.add("fx-hg-cut");
+    if (g.querySelector(":scope > img, :scope > video, :scope > picture > img")) g.classList.add("fx-hg-pic");
+    st.hg = g;
+    // What the effect draws beyond the picture's edge never widens the page.
+    var sec = g.closest(".hero,#hero,section"); if (sec) sec.classList.add("fx-hg-clip");
+    if (c.herofx === "shine") { if (cs.position === "static") g.style.position = "relative"; g.appendChild(el("i", "fx-hg-shine")); }
+    if (bg || ["orbit", "ripple", "sparkle"].indexOf(c.herofx) < 0) return;
+    var host = g.parentElement; if (!host) return;
+    if (getComputedStyle(host).position === "static") host.style.position = "relative";
+    if (cs.position === "static") g.style.position = "relative"; if (cs.zIndex === "auto") g.style.zIndex = "1";
+    var html = "";
+    if (c.herofx === "orbit") html = '<svg viewBox="0 0 200 200" aria-hidden="true"><g class="o1"><circle cx="100" cy="100" r="96" fill="none" stroke="var(--fxa)" stroke-width=".7" stroke-dasharray="1.5 7" stroke-linecap="round" opacity=".7"/><circle cx="100" cy="4" r="3.2" fill="var(--fxa)"/></g><g class="o2"><circle cx="100" cy="100" r="86" fill="none" stroke="var(--c2,var(--fxa))" stroke-width=".6" opacity=".4"/><circle cx="186" cy="100" r="2.4" fill="var(--c2,var(--fxa))"/><circle cx="14" cy="100" r="1.6" fill="var(--c3,var(--fxa))"/></g></svg>';
+    if (c.herofx === "ripple") html = '<span class="rp" style="--n:0"></span><span class="rp" style="--n:1"></span><span class="rp" style="--n:2"></span>';
+    if (c.herofx === "sparkle") { var cols = ["var(--fxa)", "var(--c2,var(--fxa))", "var(--c3,var(--fxa))"], pts = [[4, 12], [92, 6], [98, 46], [88, 90], [10, 86], [-2, 52], [50, -3], [34, 98], [72, 99], [18, 30], [80, 24]];
+      html = pts.map(function (p, i) { return '<i class="sp' + (i % 3 === 1 ? " dot" : "") + '" style="--x:' + p[0] + "%;--y:" + p[1] + "%;--s:" + (10 + (i * 7) % 12) + "px;--c:" + cols[i % 3] + ";--d:" + (4.2 + (i % 4) * 0.9) + "s;--w:" + (-(i * 0.83)).toFixed(2) + 's"></i>'; }).join(""); }
+    var deco = el("div", "fx-hg-deco" + (c.herofx === "sparkle" ? " top" : ""), html); deco.setAttribute("aria-hidden", "true"); host.appendChild(deco);
+    var grow = c.herofx === "orbit" ? 0.13 : c.herofx === "ripple" ? 0.06 : 0.05;
+    function place() { var w = g.offsetWidth, h = g.offsetHeight, d = c.herofx === "orbit" ? Math.min(Math.max(w, h) * (1 + grow * 2), Math.min(w, h) * 1.5) : 0;
+      if (c.herofx === "orbit") { deco.style.width = deco.style.height = d + "px"; deco.style.left = g.offsetLeft + w / 2 - d / 2 + "px"; deco.style.top = g.offsetTop + h / 2 - d / 2 + "px"; }
+      else { deco.style.left = g.offsetLeft - w * grow + "px"; deco.style.top = g.offsetTop - h * grow + "px"; deco.style.width = w * (1 + grow * 2) + "px"; deco.style.height = h * (1 + grow * 2) + "px"; }
+      deco.style.setProperty("--hgr", getComputedStyle(g).borderTopLeftRadius || "28px"); }
+    place(); if ("ResizeObserver" in window) { st.hgRO = new ResizeObserver(place); st.hgRO.observe(g); st.hgRO.observe(host); }
   }
   /** The page's sections, for "reveal" and the side dots: the direct children of <main> that take real room. */
   function sections(root) { return $$("main > *", root).filter(function (n) { return n.offsetHeight > 120 && getComputedStyle(n).position !== "fixed"; }); }
@@ -647,9 +716,203 @@
     }
   }
 
+  // ---- A section's own background (content.sectionBg[key] = { on, kind, color, image, video, dim, text }): a colour, a
+  // picture or GIF, or a silent looping video, laid behind the section's content whatever the theme.
+  var SBG_CSS = ".has-sbg{isolation:isolate}.has-sbg[data-sbg-c]{background:var(--sbg)!important}" +
+    ".sbg{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;border-radius:inherit}" +
+    ".sbg img,.sbg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}.sbg i{position:absolute;inset:0}" +
+    ".sbg[data-blur] img,.sbg[data-blur] video{filter:blur(var(--sbl));inset:calc(var(--sbl)*-2);width:calc(100% + var(--sbl)*4);height:calc(100% + var(--sbl)*4)}" +
+    // a slideshow of pictures: they follow each other by themselves, with no controls
+    ".sbg[data-slides] img{opacity:0;transition:opacity 1.4s ease}.sbg[data-slides] img.on{opacity:1}" +
+    ".sbg[data-slides=zoom] img{transform:scale(1);transition:opacity 1.4s ease,transform 12s linear}.sbg[data-slides=zoom] img.on{transform:scale(1.12)}" +
+    ".sbg[data-slides=slide] img{opacity:1;transform:translateX(100%);transition:transform 1.1s cubic-bezier(.6,.05,.2,1)}.sbg[data-slides=slide] img.on{transform:none}.sbg[data-slides=slide] img.was{transform:translateX(-100%)}" +
+    "@media(prefers-reduced-motion:reduce){.sbg[data-slides] img{transition:none!important;transform:none!important}}" +
+    ".has-sbg[data-sbg-text=light]{--text:#fff;--soft:rgba(255,255,255,.82);--line:rgba(255,255,255,.24);--surface:rgba(255,255,255,.1);color:#fff}" +
+    ".has-sbg[data-sbg-text=dark]{--text:#14161a;--soft:rgba(20,22,26,.7);--line:rgba(20,22,26,.16);--surface:rgba(255,255,255,.72);color:#14161a}" +
+    // its own text colour, font and text style
+    ".has-sbg[data-sbg-text=custom]{--text:var(--scol);--soft:color-mix(in srgb,var(--scol) 76%,transparent);--line:color-mix(in srgb,var(--scol) 24%,transparent);color:var(--scol)}" +
+    ".has-sbg[data-sbg-text=custom] :is(h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,summary,dt,dd,small){color:var(--scol)!important}" +
+    ".has-sbg[data-sbg-text=custom] :is(p,li,figcaption,dd,small):not(:is(h1,h2,h3,h4,h5,h6) *){color:color-mix(in srgb,var(--scol) 84%,transparent)!important}" +
+    ".has-sbg[data-sfont=all],.has-sbg[data-sfont=all] :is(h1,h2,h3,h4,h5,h6,p,li,a,span,b,strong,em,small,button,input,select,textarea,label,td,th,blockquote,figcaption,dt,dd,summary,div){font-family:var(--sfont),system-ui,sans-serif!important}" +
+    ".has-sbg[data-sfont=head] :is(h1,h2,h3,h4,h5,h6),.has-sbg[data-sfont=head] :is(h1,h2,h3,h4,h5,h6) *{font-family:var(--sfont),system-ui,sans-serif!important}" +
+    [["bold", "font-weight:800"], ["light", "font-weight:300"], ["italic", "font-style:italic"], ["bolditalic", "font-weight:800!important;font-style:italic"], ["upper", "text-transform:uppercase!important;letter-spacing:.04em"], ["spaced", "letter-spacing:.09em"]]
+      .map(function (x) { return ".has-sbg[data-sfs=" + x[0] + "] :is(h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,summary,dt,dd){" + x[1] + "!important}"; }).join("") +
+    // its own alignment: headings and text outside the cards, and the blocks and rows that hold them (marked by sectionAlign)
+    ":where([data-salign]) :where(.card,[class*=card],article,li,form,table,details,.box,.tile,.cat,.banner,.loc,.qa-i){text-align:start}" +
+    [["left", "0", "auto", "flex-start", "start"], ["center", "auto", "auto", "center", "center"], ["right", "auto", "0", "flex-end", "end"]].map(function (x) { var S = "[data-salign=" + x[0] + "] ", OUT = ":not(:is(.card,[class*=card],article,li,form,table,details,.box,.tile,.cat,.banner,.loc,.qa-i) *)";
+      return S + ":is(h1,h2,h3,h4,h5,h6,p,blockquote,figcaption,small,header,div,dl,dt,dd)" + OUT + ":not(:is(.card,[class*=card],article,form,table,details,.box,.tile,.cat,.banner,.loc,.qa-i,.sbg)){text-align:" + x[0] + "!important}" +
+        S + ".fx-salm{margin-left:" + x[1] + "!important;margin-right:" + x[2] + "!important}" +
+        S + ":is(.fx-salg,.fx-salf){justify-content:" + x[3] + "!important}" +
+        S + ".fx-salc{align-items:" + x[3] + "!important}"; }).join("");
+  /** Alignment: marks, outside the section's cards, the blocks narrower than their place (so they can be moved as a
+   *  whole) and the rows and grids (so what they hold can be moved), whatever the theme calls them. */
+  function sectionAlign(el) {
+    var CARD = ".card,[class*=card],article,li,form,table,details,.box,.tile,.cat,.banner,.loc,.qa-i";
+    Array.prototype.forEach.call(el.querySelectorAll("*"), function (n) {
+      if (n.classList.contains("sbg") || n.closest(".sbg")) return;
+      var c = n.closest(CARD); if (c && c !== el && el.contains(c)) return;
+      var cs = getComputedStyle(n), d = cs.display;
+      if (d === "grid" || d === "inline-grid") n.classList.add("fx-salg");
+      else if (d === "flex" || d === "inline-flex") n.classList.add(cs.flexDirection.indexOf("column") === 0 ? "fx-salc" : "fx-salf");
+      if (n.parentNode === el || cs.position === "absolute" || cs.position === "fixed") return;   // the section's own wrapper stays where it is
+      var tag = n.tagName.toLowerCase(), block = d === "block" || d === "flex" || d === "grid" || d === "flow-root" || d === "list-item";
+      if (block && (cs.maxWidth !== "none" || tag === "svg" || tag === "img" || tag === "hr")) n.classList.add("fx-salm");
+    });
+  }
+  var COLOR_OK = /^(#[0-9a-f]{3,8}|rgba?\([0-9., %]+\))$/i;
+  /** A section's own font, text colour and text style. */
+  function sectionText(el, k, opts) {
+    var fam = String(k.font || "").replace(/["\\<>;{}]/g, "").trim();
+    if (fam) {
+      var id = "sfont-" + fam.toLowerCase().replace(/[^a-z0-9]+/g, "-"), spec = (opts.fonts && opts.fonts[fam]) || encodeURIComponent(fam).replace(/%20/g, "+");
+      if (!document.getElementById(id) && fontsOk(opts.c)) { var l = document.createElement("link"); l.id = id; l.rel = "stylesheet"; l.href = "https://fonts.googleapis.com/css2?family=" + spec + "&display=swap"; document.head.appendChild(l); }
+      el.style.setProperty("--sfont", '"' + fam + '"'); el.setAttribute("data-sfont", k.fontFor === "head" ? "head" : "all");
+    }
+    var tc = String(k.textColor || "").trim();
+    if (k.text === "custom" && COLOR_OK.test(tc)) { el.style.setProperty("--scol", tc); el.setAttribute("data-sbg-text", "custom"); }
+    if (/^(bold|light|italic|bolditalic|upper|spaced)$/.test(k.fontStyle || "")) el.setAttribute("data-sfs", k.fontStyle);
+  }
+  function sectionBgs(opts, root) {
+    var map = opts.bgs; if (!map || typeof map !== "object") return;
+    var url = opts.asset || function (v) { return v && (v.url || v.path) || ""; };
+    if (!Object.keys(map).some(function (x) { return map[x] && (map[x].on || map[x].align); })) return;
+    if (!document.getElementById("fx-sbg")) { var st2 = document.createElement("style"); st2.id = "fx-sbg"; st2.textContent = SBG_CSS; document.head.appendChild(st2); }
+    Object.keys(map).forEach(function (key) {
+      var k = map[key]; if (!k || !(k.on || k.align)) return;
+      var el = null; try { el = root.querySelector("#" + (window.CSS && CSS.escape ? CSS.escape(key) : key)) || root.querySelector('[data-sec="' + key + '"]'); } catch (e) { /* odd key */ }
+      if (!el && key === "hero") el = root.querySelector("section.hero,.hero");
+      if (!el && key === "footer") el = root.querySelector("footer");
+      if (!el) return;
+      if (/^(left|center|right)$/.test(k.align || "")) { el.setAttribute("data-salign", k.align); try { sectionAlign(el); } catch (e) { /* the text is still aligned */ } }
+      if (!k.on) return;
+      var pics = k.kind === "slides" && Array.isArray(k.slides) ? k.slides.map(function (x) { return url(x); }).filter(Boolean) : [];
+      var kind = k.kind === "image" || k.kind === "video" ? k.kind : pics.length > 1 ? "slides" : "color", src = kind === "image" ? url(k.image) : kind === "video" ? url(k.video) : kind === "slides" ? pics[0] : pics[0] || "";
+      if (k.kind === "slides" && pics.length === 1) kind = "image";
+      var col = /^(#[0-9a-f]{3,8}|rgba?\([0-9., %]+\))$/i.test(String(k.color || "").trim()) ? String(k.color).trim() : "";
+      if (kind !== "color" && !src) kind = "color";
+      var old = el.querySelector(":scope > .sbg"); if (old) old.remove();
+      el.classList.add("has-sbg");
+      try { sectionText(el, k, opts); } catch (e) { /* the text keeps the theme's look */ }
+      if (k.kind === "none" || (kind === "color" && !col)) return;
+      el.setAttribute("data-sbg", kind);
+      if (col) { el.style.setProperty("--sbg", col); el.setAttribute("data-sbg-c", ""); }
+      if (k.text === "light" || k.text === "dark") el.setAttribute("data-sbg-text", k.text);
+      var cs = getComputedStyle(el);
+      if (cs.position === "static") el.style.position = "relative";
+      // Left on automatic: when the theme's text would be hard to read on the chosen colour, light or dark text is picked.
+      if (!k.text && kind === "color") {
+        var lum = function (c) { var m = /rgba?\(([^)]+)\)/.exec(c || ""); if (!m) return null; var v = m[1].split(",").slice(0, 3).map(function (x) { x = parseFloat(x) / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+        var lb = lum(cs.backgroundColor), lt = lum(cs.color);
+        if (lb !== null && lt !== null && (Math.max(lb, lt) + 0.05) / (Math.min(lb, lt) + 0.05) < 3.5) el.setAttribute("data-sbg-text", lb < 0.4 ? "light" : "dark");
+      }
+      if (kind === "color") return;
+      var box = document.createElement("div"); box.className = "sbg fx-skip"; box.setAttribute("aria-hidden", "true");
+      var blur = Math.max(0, Math.min(40, Number(k.blur) || 0)); if (blur) { box.setAttribute("data-blur", ""); box.style.setProperty("--sbl", blur + "px"); }
+      if (kind === "slides") {
+        box.setAttribute("data-slides", k.slideFx === "zoom" || k.slideFx === "slide" ? k.slideFx : "fade");
+        var ims = pics.map(function (u, n) { var x = document.createElement("img"); x.alt = ""; x.decoding = "async"; if (n > 1) x.loading = "lazy"; x.src = u; if (!n) x.className = "on"; box.appendChild(x); return x; });
+        if (!RM) { var at = 0, secs = Math.max(2, Math.min(20, Number(k.slideSecs) || 5));
+          var tick = setInterval(function () { if (!box.isConnected) { clearInterval(tick); return; } if (document.hidden) return; ims.forEach(function (x) { x.classList.remove("was"); }); ims[at].classList.remove("on"); ims[at].classList.add("was"); at = (at + 1) % ims.length; ims[at].classList.add("on"); }, secs * 1000); }
+      } else
+      if (kind === "image") { var im = document.createElement("img"); im.alt = ""; im.decoding = "async"; im.loading = "lazy"; im.src = src; box.appendChild(im); }
+      else { var v = document.createElement("video"); v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute("muted", ""); v.setAttribute("playsinline", ""); v.preload = "metadata"; if (!RM) v.autoplay = true; var poster = url(k.image); if (poster) v.poster = poster; v.src = src; box.appendChild(v); if (!RM) { var pl = v.play(); if (pl && pl.catch) pl.catch(function () {}); } }
+      var dim = Math.max(0, Math.min(95, Number(k.dim) || 0));
+      if (dim) { var ov = document.createElement("i"); ov.style.background = ((k.shade ? k.shade === "light" : k.text === "dark") ? "rgba(255,255,255," : "rgba(0,0,0,") + dim / 100 + ")"; box.appendChild(ov); }
+      el.insertBefore(box, el.firstChild);
+    });
+  }
+  // ---- Legal & privacy (content.legal, content.privacy)
+  /** Has the visitor allowed this consent category? Read straight from the saved choice, so it works before consent.js loads. */
+  function allowed(c, cat) {
+    var K = c && c.consent; if (!K || !K.on || PREVIEW) return true;
+    if (window.SiteConsent) { try { var st = window.SiteConsent.state(); if (st && st.asked) return !!st.categories[cat]; } catch (e) { /* not mounted yet */ } }
+    if (K.mode === "notice") return true;
+    try { var x = JSON.parse(localStorage.getItem("site-consent:" + location.pathname.replace(/[^/]*$/, "")) || "null"); if (x && x.c && (K.version == null || x.v === K.version)) return x.c[cat] === true; } catch (e) { /* no storage */ }
+    return K.mode === "optout";
+  }
+  var fontsWere = null, fontWatch = null;
+  /** Google Fonts may load: always, unless the site holds them back until the visitor allows the Preferences category. */
+  function fontsOk(c) {
+    var ok = !(c && c.privacy && c.privacy.blockFonts) || allowed(c, "preferences");
+    fontsWere = ok;
+    if (!ok && !fontWatch && window.MutationObserver) {
+      // a backstop for fonts asked for by other parts of the page
+      var G = /^https:\/\/fonts\.(googleapis|gstatic)\.com\//;
+      document.querySelectorAll('link[href*="fonts.googleapis.com"],link[href*="fonts.gstatic.com"]').forEach(function (l) { l.remove(); });
+      fontWatch = new MutationObserver(function (ms) { if (fontsWere) return; ms.forEach(function (m) { Array.prototype.forEach.call(m.addedNodes, function (n) { if (n.tagName === "LINK" && G.test(n.href || "")) n.remove(); }); if (m.type === "attributes" && m.target.tagName === "LINK" && G.test(m.target.href || "")) m.target.removeAttribute("href"); }); });
+      fontWatch.observe(document.head, { childList: true, attributes: true, attributeFilter: ["href"], subtree: true });
+    }
+    return ok;
+  }
+  var legalCss = false;
+  function legalBits(opts, root) {
+    var c = opts.c; if (!c) return;
+    if (!legalCss) { legalCss = true; var st2 = document.createElement("style"); st2.id = "fx-legal"; st2.textContent = ".legal-id{box-sizing:border-box;width:100%;max-width:1180px;margin:0 auto;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));text-align:center;font:400 12.5px/1.6 var(--fb,system-ui,sans-serif);opacity:.78;border-top:1px solid color-mix(in srgb,currentColor 16%,transparent)}.legal-id b{font-weight:600}.legal-id span+span::before{content:'·';margin:0 .55em;opacity:.6}" +
+      "label.consent a,.of-consent a,.co-consent a{text-decoration:underline;color:inherit}.of-consent,.co-consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45;margin:12px 0 4px;cursor:pointer}.of-consent input,.co-consent input{flex:none;width:18px;height:18px;margin-top:2px;accent-color:var(--c1,var(--accent,currentColor))}"; document.head.appendChild(st2); }
+    // who runs the site, at the bottom of every page
+    var L = c.legal || {}, name = String(L.name || "").trim(), foot = root.querySelector("footer");
+    var old = root.querySelector(".legal-id"); if (old) old.remove();
+    if (foot && name && L.footer !== false) {
+      var bits = [["", name, 1], ["", String(L.address || "").replace(/\s*\n\s*/g, ", ").trim()], ["Phone: ", String(L.phone || "").trim()], ["Email: ", String(L.email || "").trim()], ["GSTIN: ", String(L.gstin || "").trim()], ["CIN: ", String(L.cin || "").trim()]].filter(function (x) { return x[1]; });
+      var d = document.createElement("div"); d.className = "legal-id fx-skip"; d.setAttribute("aria-label", "Business details");
+      d.innerHTML = bits.map(function (x) { return "<span>" + escHtml(x[0]) + (x[2] ? "<b>" + escHtml(x[1]) + "</b>" : escHtml(x[1])) + "</span>"; }).join("");
+      foot.appendChild(d);
+    }
+    // the consent tick boxes link to the privacy policy
+    var url = String(opts.policy || "");
+    if (/^(https?:\/\/|[\w.?=&%\/#-]+$)/i.test(url)) Array.prototype.forEach.call(root.querySelectorAll("label.consent span,.of-consent span,.co-consent span"), function (sp) {
+      if (sp.querySelector("a")) return; var t = sp.textContent, m = /privacy policy/i.exec(t), a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener";
+      if (m) { a.textContent = m[0]; sp.textContent = ""; sp.appendChild(document.createTextNode(t.slice(0, m.index))); sp.appendChild(a); sp.appendChild(document.createTextNode(t.slice(m.index + m[0].length))); }
+      else { a.textContent = "Privacy policy"; sp.appendChild(document.createTextNode(" ")); sp.appendChild(a); }
+    });
+    // fonts held back: draw again with them once the visitor allows it
+    if (opts.again && !legalBits.on) { legalBits.on = true; addEventListener("site:consent", function () { var c2 = legalBits.c; if (c2 && c2.privacy && (c2.privacy.blockFonts || c2.privacy.blockMaps) && fontsWere === false && allowed(c2, "preferences")) { fontsWere = true; try { legalBits.again(); } catch (e) { /* next page load */ } } }); }
+    legalBits.c = c; legalBits.again = opts.again;
+  }
+  // ---- Accessibility check, asked for by the editor: looks at the page as drawn and answers with what it found.
+  function a11yScan() {
+    var out = [], seen = 0, add = function (kind, text, el) { if (out.length < 40 && !out.some(function (o) { return o.text === text && o.where === w(el); })) out.push({ kind: kind, text: text, where: w(el) }); };
+    var w = function (el) { if (!el) return ""; var t = (el.getAttribute("aria-label") || el.textContent || el.getAttribute("alt") || el.getAttribute("src") || "").replace(/\s+/g, " ").trim().slice(0, 48), sec = el.closest("section[id],footer,header,nav"); return (sec ? (sec.id || sec.tagName.toLowerCase()) + ": " : "") + (t ? "“" + t + "”" : el.tagName.toLowerCase()); };
+    var vis = function (el) { if (!el.getClientRects().length) return false; var cs = getComputedStyle(el); return cs.visibility !== "hidden" && cs.display !== "none" && parseFloat(cs.opacity) > 0.05; };
+    var parse = function (c) { var m = /rgba?\(([^)]+)\)/.exec(c || ""); if (!m) return null; var v = m[1].split(/[,\/ ]+/).filter(Boolean).map(parseFloat); return { r: v[0], g: v[1], b: v[2], a: v.length > 3 ? v[3] : 1 }; };
+    var lum = function (c) { var f = function (x) { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+    // the colour behind an element: the nearest solid background; a picture, video or gradient behind it cannot be judged
+    var behind = function (el) { var q = el.getBoundingClientRect(), cx = q.left + q.width / 2, cy = q.top + q.height / 2;
+      for (var e = el; e && e.nodeType === 1; e = e.parentElement) { var cs = getComputedStyle(e); if (cs.backgroundImage && cs.backgroundImage !== "none") return null;
+        // a picture or video lying under the text (a card with a photo behind its title)
+        if (e !== el) { for (var ps = 0; ps < 2; ps++) { var pc = getComputedStyle(e, ps ? "::after" : "::before"); if (pc && pc.content && pc.content !== "none" && pc.position === "absolute" && ((pc.backgroundImage && pc.backgroundImage !== "none") || ((parse(pc.backgroundColor) || { a: 0 }).a > 0.05))) return null; }
+          for (var k2 = 0; k2 < e.children.length && k2 < 20; k2++) { var ch = e.children[k2]; if (ch === el || ch.contains(el)) continue; var cc = getComputedStyle(ch); if (cc.position !== "absolute" && cc.position !== "fixed") continue; var cr = ch.getBoundingClientRect(); if (cr.width > 40 && cx >= cr.left && cx <= cr.right && cy >= cr.top && cy <= cr.bottom && cc.display !== "none") return null; }
+          var media = e.querySelectorAll("img,video,canvas"); for (var n = 0; n < media.length && n < 12; n++) { if (el.contains(media[n])) continue; var r = media[n].getBoundingClientRect(); if (r.width > 40 && cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) return null; } } if (e.classList.contains("has-sbg") && e.getAttribute("data-sbg") && e.getAttribute("data-sbg") !== "color") return null; var b = parse(cs.backgroundColor); if (b && b.a > 0.95) return b; if (b && b.a > 0.05) return null; } return { r: 255, g: 255, b: 255, a: 1 }; };
+    var lowText = 0;
+    Array.prototype.forEach.call(document.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,a,button,label,span,td,th,small,summary,blockquote,figcaption,dt,dd"), function (el) {
+      if (el.closest(".fx-skip,[aria-hidden=true],#site-consent,#site-code-bar,.sbg") || !vis(el)) return;
+      var own = Array.prototype.some.call(el.childNodes, function (n) { return n.nodeType === 3 && n.nodeValue.trim().length > 1; }); if (!own) return;
+      seen++; var cs = getComputedStyle(el), fg = parse(cs.color), bg = behind(el); if (!fg || !bg || fg.a < 0.5) return;
+      var l1 = lum(fg), l2 = lum(bg), ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05), size = parseFloat(cs.fontSize), big = size >= 24 || (size >= 18.5 && parseInt(cs.fontWeight, 10) >= 700);
+      if (ratio < (big ? 3 : 4.5)) { lowText++; add("contrast", "Text is hard to read on its background (contrast " + ratio.toFixed(1) + ":1, needs " + (big ? "3" : "4.5") + ":1)", el); }
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("img"), function (im) { if (im.closest(".fx-skip,[aria-hidden=true],.sbg") || !vis(im)) return; seen++; if (!im.hasAttribute("alt")) add("alt", "A picture has no description for screen readers", im); else if (!im.getAttribute("alt").trim() && im.closest("a,button") && !(im.closest("a,button").textContent || "").trim() && !im.closest("a,button").getAttribute("aria-label")) add("alt", "A picture used as a link or button has no description", im); });
+    Array.prototype.forEach.call(document.querySelectorAll("a[href],button,[role=button]"), function (el) { if (el.closest(".fx-skip,[aria-hidden=true],#site-consent") || !vis(el)) return; seen++; var nm = (el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || "").trim() || Array.prototype.map.call(el.querySelectorAll("img[alt]"), function (i) { return i.alt; }).join("").trim() || (el.getAttribute("aria-labelledby") ? "x" : ""); if (!nm) add("name", "A " + (el.tagName === "A" ? "link" : "button") + " has no name a screen reader can say", el); });
+    Array.prototype.forEach.call(document.querySelectorAll("input:not([type=hidden]):not([type=submit]):not([type=button]),select,textarea"), function (el) { if (el.closest(".fx-skip,[aria-hidden=true],#site-consent") || el.classList.contains("hp-f") || !vis(el)) return; seen++; var ok = el.getAttribute("aria-label") || el.getAttribute("aria-labelledby") || el.closest("label") || (el.id && document.querySelector('label[for="' + el.id.replace(/"/g, "") + '"]')) || el.getAttribute("title"); if (!ok) add("label", "A form box has no label" + (el.getAttribute("placeholder") ? " (a placeholder is not a label)" : ""), el); });
+    var hs = Array.prototype.filter.call(document.querySelectorAll("h1,h2,h3,h4,h5,h6"), function (h) { return vis(h) && !h.closest(".fx-skip,[aria-hidden=true]"); }), h1 = hs.filter(function (h) { return h.tagName === "H1"; });
+    if (!h1.length) add("heading", "The page has no main heading (h1)", null); else if (h1.length > 1) add("heading", "The page has " + h1.length + " main headings (h1); one is best", h1[1]);
+    for (var i = 1; i < hs.length; i++) { var a = +hs[i - 1].tagName[1], b = +hs[i].tagName[1]; if (b > a + 1) { add("heading", "A heading skips a level (h" + a + " then h" + b + ")", hs[i]); break; } }
+    if (!document.documentElement.getAttribute("lang")) add("lang", "The page does not say which language it is in", null);
+    if (!document.title.trim()) add("title", "The page has no title for the browser tab", null);
+    Array.prototype.forEach.call(document.querySelectorAll("[tabindex]"), function (el) { if (+el.getAttribute("tabindex") > 0 && vis(el)) add("keyboard", "An element changes the keyboard's Tab order (tabindex above 0)", el); });
+    Array.prototype.forEach.call(document.querySelectorAll("[onclick],div[role=button],span[role=button]"), function (el) { if (vis(el) && !/^(A|BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY|LABEL)$/.test(el.tagName) && !el.hasAttribute("tabindex")) add("keyboard", "Something that is clicked cannot be reached with the keyboard", el); });
+    return { issues: out, seen: seen };
+  }
+  if (PREVIEW) addEventListener("message", function (e) {
+    if (e.origin !== location.origin || e.source !== window.parent || !e.data || e.data.type !== "cms:a11y") return;
+    var r; try { r = a11yScan(); } catch (x) { r = { issues: [{ kind: "error", text: "The check could not finish on this page.", where: String(x && x.message || x).slice(0, 80) }], seen: 0 }; }
+    window.parent.postMessage({ type: "cms:a11y", page: (location.pathname.split("/").pop() || "index.html") + location.search, issues: r.issues, seen: r.seen }, location.origin);
+  });
   function init(opts) {
     opts = opts || {};
     var root = opts.root || document.body;
+    try { legalBits(opts, root); } catch (e) { /* never worth a broken page */ }
+    try { sectionBgs(opts, root); } catch (e) { /* a background is never worth a broken page */ }
     ensureStyle(); wire();
     try { badge(opts.badge); } catch (e) {}
     var c = cfg(), sig = JSON.stringify(c), changed = sig !== st.sig;
@@ -696,6 +959,7 @@
     if (!PREVIEW) try { var ik = "site-intro:" + location.pathname.replace(/[^/]*$/, ""); var vxl = document.getElementById("vxLoad"); if (c.loader !== "none") { var ic = colors(); localStorage.setItem(ik, JSON.stringify({ k: c.loader, bg: ic.deep, fg: ic.on })); } else if (vxl) { st.ownIntro = true; var vcs = getComputedStyle(vxl); localStorage.setItem(ik, JSON.stringify({ k: "curtain", bg: vcs.backgroundColor, fg: vcs.color })); } else if (!st.ownIntro) localStorage.removeItem(ik); } catch (e) {}
     setupText(root, c, animate, delay);
     setupScrollExtras(root, c);
+    setupHeroFx(root, c);
     onScroll();
   }
 
@@ -791,8 +1055,160 @@
     if (tag === "style") { if (el.textContent !== want) el.textContent = want; } else if (el.getAttribute("href") !== want) el.setAttribute("href", want);
     return fam;
   }
+  // ---- Code Update (content.code = { on, css, js, pages }): a site's own copy of the template's code. When it is on, the
+  // template's script hands the page over before it draws anything: its stylesheet is swapped for the copy's CSS and
+  // the copy's JavaScript runs in its place. A copy that cannot start (a slip in the JavaScript) is dropped and the
+  // template's own code draws the site, so a mistake never leaves a blank page. Your HTML for each page: see scDrawn.
+  var scPV = window.name === "cms-preview" && window.parent !== window;
+  var sc = { run: null, bad: null, t: 0, ev: [], tm: [], o: {} }, scAdd = EventTarget.prototype.addEventListener, scTO = window.setTimeout, scIV = window.setInterval, scOn = false;
+  function scWant(c) { var k = c && c.code; return k && k.on && String(k.js || "").trim() ? k : null; }
+  function scSig(k) { return String(k.js || ""); }
+  function scFlag(v) { try { if (v) sessionStorage.setItem("site-code-wait", "1"); else sessionStorage.removeItem("site-code-wait"); } catch (e) { /* private mode */ } }
+  function scReload() { clearTimeout(sc.t); sc.t = scTO.call(window, function () { location.reload(); }, scPV ? 900 : 0); }
+  // While the template's script starts up, note the listeners and timers it sets, so they can be taken off at the hand-over.
+  function scTrack() {
+    if (scOn) return; scOn = true;
+    EventTarget.prototype.addEventListener = function (t, f, o) { sc.ev.push([this || window, t, f, o]); return scAdd.call(this || window, t, f, o); };
+    window.setTimeout = function () { var id = scTO.apply(window, arguments); sc.tm.push(id); return id; };
+    window.setInterval = function () { var id = scIV.apply(window, arguments); sc.tm.push(id); return id; };
+    scTO.call(window, scUntrack, 0);
+  }
+  function scUntrack() { if (!scOn) return; scOn = false; EventTarget.prototype.addEventListener = scAdd; window.setTimeout = scTO; window.setInterval = scIV; }
+  function scQuiet() { scUntrack(); sc.ev.forEach(function (x) { try { x[0].removeEventListener(x[1], x[2], x[3]); } catch (e) { /* gone */ } }); sc.tm.forEach(function (id) { clearTimeout(id); clearInterval(id); }); sc.ev = []; sc.tm = []; }
+  function scCss(k, o) {
+    var el = o.css ? document.querySelector(o.css) : null, st = document.getElementById("site-code-css"), css = k ? String(k.css || "") : "";
+    if (!css.trim()) { if (st) st.remove(); if (el) el.disabled = false; return; }
+    if (!st) { st = document.createElement("style"); st.id = "site-code-css"; if (el && el.parentNode) el.parentNode.insertBefore(st, el.nextSibling); else document.head.appendChild(st); }
+    if (st.textContent !== css) st.textContent = css;
+    if (el) el.disabled = true;
+  }
+  // ---- Your HTML for a page (content.code.pages[key] = { html, base }). "base" is the page's markup as the template drew
+  // it when it was copied, "html" is that markup with your changes. Each time the template writes the page, the parts
+  // you changed are laid over it, before anything is wired up: what you left alone still follows the content.
+  function scKey() {
+    var f = (location.pathname.split("/").pop() || "index").replace(/\.html?$/i, "") || "index", q;
+    try { q = new URLSearchParams(location.search); ["p", "s", "id", "c"].forEach(function (n) { var v = q.get(n); if (v) f += "?" + n + "=" + v; }); } catch (e) { /* old browser */ }
+    return f;
+  }
+  function scKids(n) { return Array.prototype.filter.call(n.childNodes, function (c) { return c.nodeType === 1 || (c.nodeType === 3 && c.nodeValue.trim()); }); }
+  function scTxt(n) { return n.nodeValue.replace(/\s+/g, " ").trim(); }
+  function scSame(a, b) {
+    if (a.nodeType !== b.nodeType) return false;
+    if (a.nodeType === 3) return scTxt(a) === scTxt(b);
+    if (a.tagName !== b.tagName || a.attributes.length !== b.attributes.length) return false;
+    for (var i = 0; i < a.attributes.length; i++) if (b.getAttribute(a.attributes[i].name) !== a.attributes[i].value) return false;
+    var x = scKids(a), y = scKids(b); if (x.length !== y.length) return false;
+    for (i = 0; i < x.length; i++) if (!scSame(x[i], y[i])) return false;
+    return true;
+  }
+  function scImp(n) { var c = document.importNode(n, true); if (c.nodeType === 3) c.nodeValue = c.nodeValue.replace(/\s+/g, " "); return c; }
+  function scPatch(live, to, base) {
+    var i, a;
+    for (i = 0; i < to.attributes.length; i++) { a = to.attributes[i]; if (base.getAttribute(a.name) !== a.value) live.setAttribute(a.name, a.value); }
+    for (i = 0; i < base.attributes.length; i++) { a = base.attributes[i]; if (!to.hasAttribute(a.name)) live.removeAttribute(a.name); }
+    var T = scKids(to), B = scKids(base), L = scKids(live), kind = function (n) { return n.nodeType === 3 ? "#" : n.tagName; };
+    var lined = T.length === B.length && L.length === B.length && T.every(function (t, n) { return kind(t) === kind(B[n]); });
+    if (lined) {
+      for (i = 0; i < T.length; i++) {
+        if (scSame(T[i], B[i])) continue;
+        if (T[i].nodeType === 3) { if (L[i].nodeType === 3) L[i].nodeValue = T[i].nodeValue.replace(/\s+/g, " "); else live.replaceChild(scImp(T[i]), L[i]); }
+        else if (L[i].nodeType === 1 && L[i].tagName === T[i].tagName) scPatch(L[i], T[i], B[i]);
+        else live.replaceChild(scImp(T[i]), L[i]);
+      }
+      return;
+    }
+    // Something was added, taken out or moved here: keep the drawn pieces that are still wanted, in your order.
+    var used = [], out = [], fits = L.length === B.length, mark = function (n) { return n.nodeType === 1 ? n.tagName + "#" + (n.getAttribute("id") || "") + "." + (n.getAttribute("class") || "") : ""; };
+    T.forEach(function (t, n) {
+      var j = -1, k;
+      if (fits) { for (k = 0; k < B.length; k++) if (!used[k] && scSame(t, B[k])) { j = k; break; } }
+      if (j >= 0) { used[j] = 1; out[n] = L[j]; }
+    });
+    T.forEach(function (t, n) {
+      if (out[n]) return; var j = -1, k;
+      if (fits && t.nodeType === 1) { for (k = 0; k < B.length; k++) if (!used[k] && B[k].nodeType === 1 && L[k].nodeType === 1 && L[k].tagName === t.tagName && mark(B[k]) === mark(t)) { j = k; break; } }
+      if (j >= 0) { used[j] = 1; scPatch(L[j], t, B[j]); out[n] = L[j]; } else out[n] = scImp(t);
+    });
+    Array.prototype.slice.call(live.childNodes).forEach(function (n) { if (out.indexOf(n) < 0) live.removeChild(n); });
+    out.forEach(function (n) { live.appendChild(n); });
+  }
+  var scMemo = { html: "", base: "", to: null, from: null };
+  function scDom(h) { var t = document.createElement("template"); t.innerHTML = h; var d = document.createElement("div"); d.appendChild(t.content); return d; }
+  /** Called by the template the moment it has written a page's markup. */
+  function scDrawn(root, content) {
+    if (!root) return; var key = scKey();
+    if (scPV) sc.snap = { key: key, html: root.innerHTML };
+    var k = content && content.code, p = k && k.on && k.pages && k.pages[key];
+    if (!p || typeof p.html !== "string" || typeof p.base !== "string" || p.html === p.base) return;
+    try {
+      if (scMemo.html !== p.html || scMemo.base !== p.base) scMemo = { html: p.html, base: p.base, to: scDom(p.html), from: scDom(p.base) };
+      if (!scSame(scMemo.to, scMemo.from)) scPatch(root, scMemo.to, scMemo.from);
+    } catch (e) { try { console.error("Code Update: your HTML for this page could not be laid over it.", e); } catch (x) { /* no console */ } }
+  }
+  // The editor asks its preview for the markup of the page it shows, as the template drew it.
+  if (scPV) addEventListener("message", function (e) {
+    if (e.origin !== location.origin || e.source !== window.parent || !e.data || e.data.type !== "cms:snap") return;
+    window.parent.postMessage({ type: "cms:snap", ok: !!sc.snap, key: sc.snap ? sc.snap.key : scKey(), html: sc.snap ? sc.snap.html : "" }, location.origin);
+  });
+  function scBar(msg) {
+    var b = document.getElementById("site-code-bar"); if (!msg || !scPV) { if (b) b.remove(); return; }
+    if (!b) { b = document.createElement("div"); b.id = "site-code-bar"; b.setAttribute("role", "alert"); b.style.cssText = "position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483000;padding:10px 14px;border-radius:10px;background:#7f1d1d;color:#fff;font:13px/1.45 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)"; (document.body || document.documentElement).appendChild(b); }
+    b.textContent = msg;
+  }
+  function scFail(k, e) {
+    sc.run = null; sc.bad = scSig(k); scCss(null, sc.o);
+    try { console.error("Code Update: the JavaScript could not start, so the template's own code is used.", e); } catch (x) { /* no console */ }
+    scTO.call(window, function () { scBar("Code Update: your JavaScript has a mistake, so the template's own code is shown until it is fixed. " + String((e && e.message) || e).slice(0, 200)); }, 50);
+  }
+  /** Called by the template's script with the content, before it draws. True: the copy has the page, the caller stops. */
+  function scTake(content, o) {
+    o = o || {}; sc.o = o; var k = scWant(content); scFlag(!!k);
+    if (!k) { clearTimeout(sc.t); if (sc.bad !== null) { sc.bad = null; scBar(""); } scCss(content && content.code && content.code.on ? content.code : null, o); return false; }
+    if (sc.bad !== null) { if (scSig(k) !== sc.bad) scReload(); else clearTimeout(sc.t); return false; }
+    if (o.drawn) { scReload(); return !scPV; }
+    var fn; try { fn = new Function("SiteCode", "fetch", String(k.js)); } catch (e) { scFail(k, e); return false; }
+    scQuiet();
+    try { scCss(k, o); } catch (e) { /* keep the template's styles */ }
+    var text = o.text, get = function (u, i) { if (text != null && /content\.json(\?|$)/.test(String(u))) { var x = text; text = null; return Promise.resolve(new Response(x, { status: 200, headers: { "Content-Type": "application/json" } })); } return window.fetch(u, i); };
+    sc.run = scSig(k);
+    try { fn({ drawn: scDrawn, take: function () { return false; }, wait: function () { return false; }, track: function () {}, untrack: function () {} }, get); } catch (e) { scFail(k, e); return false; }
+    // In the editor's preview: a change to the CSS shows at once; a change to the HTML or JavaScript reloads the preview.
+    if (scPV) scAdd.call(window, "message", function (e) {
+      if (e.origin !== location.origin || e.source !== window.parent) return; var d = e.data || {};
+      if (d.type !== "cms:content" || !d.content || typeof d.content !== "object") return;
+      var k2 = scWant(d.content); scFlag(!!k2);
+      if (!k2 || scSig(k2) !== sc.run) scReload(); else { clearTimeout(sc.t); scCss(k2, o); }
+    });
+    return true;
+  }
+  window.SiteCode = { drawn: scDrawn, take: scTake, track: scTrack, untrack: scUntrack, wait: function () { try { return scPV && sessionStorage.getItem("site-code-wait") === "1"; } catch (e) { return false; } } };
   window.SiteFonts = { use: useFont, link: fontLink };
   window.SiteSkeleton = { show: skeleton };
   window.SiteLogo = { hero: heroLogo };
-  window.SiteFX = { init: init, version: 1 };
+  // ---- Bars that stick under the site's menu bar (the order page's toolbar, the menu's category row). Their place is
+  // measured from the menu bar as it is drawn (every theme's bar has its own height, and some float with a see-through
+  // surround), and once a bar is stuck a plain backdrop reaches from it up to the top of the window and out to both
+  // edges, so the page never shows through around the menu bar.
+  var sticky = [], stickOn = false;
+  function stickMeasure() {
+    var nv = document.querySelector(".nav, header.hdr, .vx-hdr"), pos = nv ? getComputedStyle(nv).position : "", top = nv && (pos === "sticky" || pos === "fixed") ? Math.round(nv.getBoundingClientRect().height) : 0;
+    var vw = document.documentElement.clientWidth;
+    sticky = sticky.filter(function (x) { return x.el.isConnected; });
+    sticky.forEach(function (x) {
+      (x.on || document.documentElement).style.setProperty(x.name, top + "px");
+      var r = x.el.getBoundingClientRect(), stuck = top > 0 && r.top <= top + 1 && r.bottom > 0;
+      x.el.classList.toggle("fx-stuck", stuck);
+      if (!stuck) return;
+      x.el.style.setProperty("--fx-st", top + "px"); x.el.style.setProperty("--fx-sl", Math.max(0, Math.round(r.left)) + "px"); x.el.style.setProperty("--fx-sr", Math.max(0, Math.round(vw - r.right)) + "px");
+      if (!x.bg) { for (var n = x.el; n && n.nodeType === 1; n = n.parentNode) { var m = /rgba?\(([^)]+)\)/.exec(getComputedStyle(n).backgroundColor || ""), v = m ? m[1].split(",").map(parseFloat) : null; if (v && (v.length < 4 || v[3] > 0.5)) { x.bg = "rgb(" + v.slice(0, 3).join(",") + ")"; break; } } x.el.style.setProperty("--fx-sbg", x.bg || "#fff"); }
+    });
+  }
+  function stick(el, name, on) {
+    if (!el) return;
+    if (!document.getElementById("fx-stick")) { var st3 = document.createElement("style"); st3.id = "fx-stick"; st3.textContent = ".fx-stuck::before{content:\"\";position:absolute;z-index:-1;pointer-events:none;top:calc(-1*var(--fx-st,0px));bottom:0;left:calc(-1*var(--fx-sl,0px));right:calc(-1*var(--fx-sr,0px));background:var(--fx-sbg,var(--bg,#fff))}"; document.head.appendChild(st3); }
+    sticky = sticky.filter(function (x) { return x.el !== el && x.el.isConnected; }); sticky.push({ el: el, name: name, on: on });
+    if (!stickOn) { stickOn = true; var tick = false, go = function () { if (tick) return; tick = true; requestAnimationFrame(function () { tick = false; stickMeasure(); }); }; addEventListener("scroll", go, { passive: true }); addEventListener("resize", go); addEventListener("load", go); }
+    stickMeasure(); setTimeout(stickMeasure, 400);
+  }
+  window.SiteFX = { init: init, version: 1, fontsOk: fontsOk, allowed: allowed, stick: stick };
 })();
