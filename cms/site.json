@@ -1,13 +1,13 @@
 {
   "template": "portfolio",
   "name": "Prakash Lal",
-  "version": 40,
+  "version": 43,
   "admin": "admin.html",
-  "exportedAt": "2026-11-21T06:22:49.663Z",
+  "exportedAt": "2026-11-22T21:28:31.915Z",
   "generator": "Site Studio",
   "studioBuild": {
-    "id": "7e1d41d",
-    "at": "2026-11-21T05:55:34.211Z"
+    "id": "ec25869",
+    "at": "2026-11-22T21:22:21.372Z"
   },
   "badge": "1i8r1v1",
   "menu": {
@@ -51,6 +51,12 @@
         "id": "learning"
       },
       {
+        "id": "video"
+      },
+      {
+        "id": "social"
+      },
+      {
         "id": "contact"
       },
       {
@@ -66,7 +72,13 @@
         "id": "consent"
       },
       {
+        "id": "legal"
+      },
+      {
         "id": "festival"
+      },
+      {
+        "id": "languages"
       },
       {
         "id": "seo"
@@ -75,13 +87,15 @@
         "id": "cms"
       },
       {
+        "id": "code"
+      },
+      {
         "id": "backup"
       },
       {
         "id": "account"
       }
-    ],
-    "studio": true
+    ]
   },
-  "menuV": "12a9wsx"
+  "menuV": "zlmmg9"
 }

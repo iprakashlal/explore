@@ -6,6 +6,7 @@
    after every render:
      data-cursor    none | dot | blend | spotlight | trail | ring | glow | cross | square
      data-loader    none | curtain | counter | split | wipe | iris | columns | fade | portal   (also animates page-to-page links)
+     data-loader-on both | load | menu    where it plays: first page load and menu links, only the first page load, or only menu links
      data-textfx    none | lines | letters | scramble | words | flip | wave | wipe
      data-hoverfx   none | lift | magnetic | tilt | shine | spot | zoom | offset
      data-scrollfx  none | progress | smooth | skew | reveal | ring | dots
@@ -45,7 +46,7 @@
 
   function cfg() {
     var d = doc.dataset;
-    return { cursor: d.cursor || "none", loader: d.loader || "none", text: d.textfx || "none", hover: d.hoverfx || "none", scroll: d.scrollfx || "none", overlay: d.overlay || "none", herofx: d.herofx || "none" };
+    return { cursor: d.cursor || "none", loader: d.loader || "none", text: d.textfx || "none", hover: d.hoverfx || "none", scroll: d.scrollfx || "none", overlay: d.overlay || "none", herofx: d.herofx || "none", loaderOn: d.loaderOn || "both" };
   }
   function cssVar(n) { return getComputedStyle(doc).getPropertyValue(n).trim(); }
   function colors() {
@@ -308,6 +309,13 @@
   }
 
   /* ---------------------------------------------------------------- loader */
+  // "Page load only": the intro plays on the first page of a visit and not again on pages reached through the menu;
+  // "Menu links only": no intro on a page load at all (the page-to-page cover still plays).
+  function skipIntro(c) {
+    if (c.loaderOn === "menu") return true;
+    if (c.loaderOn === "load" && !PREVIEW) { try { return sessionStorage.getItem("fx-intro-seen") === "1"; } catch (x) {} }
+    return false;
+  }
   function playLoader(kind, brand) {
     var c = colors();
     var letters = chars(String(brand || "")).slice(0, 24).map(function (ch, i) { return '<span style="--i:' + i + '">' + (ch === " " ? "&nbsp;" : escHtml(ch)) + "</span>"; }).join("");
@@ -652,7 +660,7 @@
   /* ---------------------------------------------------------------- page links */
   function onClick(e) {
     var c = cfg();
-    if (c.loader === "none" || RM || PREVIEW || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (c.loader === "none" || c.loaderOn === "load" || RM || PREVIEW || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target.closest && e.target.closest("a[href]");
     if (!a || a.target && a.target !== "_self" || a.hasAttribute("download")) return;
     var u; try { u = new URL(a.href, location.href); } catch (x) { return; }
@@ -665,6 +673,32 @@
     try { sessionStorage.setItem("fx-exit", JSON.stringify({ bg: col.deep, fg: col.on, kind: kind, brand: st.brand })); } catch (x) {}
     requestAnimationFrame(function () { requestAnimationFrame(function () { box.classList.add("in"); }); });
     setTimeout(function () { location.href = u.href; }, 560);
+  }
+  /* A menu link to a section of the same page glides there. The route is made quiet first: sections passed on the way are already settled (they used to fade in half-way as the scroll went by and looked like a cancelled transition), and the target is measured again on every step, so a layout shift on the way (an image, the locations slider) can no longer make the glide end in the wrong place and snap. The section itself fades in where you land. */
+  var glide = { id: 0 };
+  function onJump(e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || PREVIEW) return;
+    var a = e.target.closest && e.target.closest("a[href]");
+    if (!a || a.target && a.target !== "_self" || a.hasAttribute("download") || a.hasAttribute("data-fx-skip")) return;
+    var u; try { u = new URL(a.href, location.href); } catch (x) { return; }
+    if (u.origin !== location.origin || u.pathname !== location.pathname || u.search !== location.search || !u.hash || u.hash.length < 2) return;
+    var t; try { t = document.getElementById(decodeURIComponent(u.hash.slice(1))); } catch (x) { return; }
+    if (!t) return;
+    e.preventDefault();
+    var spot = function () { return Math.max(0, Math.min(doc.scrollHeight - innerHeight, scrollY + t.getBoundingClientRect().top)); };
+    if (!RM) $$(".rv:not(.in)").forEach(function (n) { if (!t.contains(n)) { n.style.transition = "none"; n.classList.add("in"); } });
+    if (location.hash !== u.hash) { try { history.pushState(null, "", u.hash); dispatchEvent(new HashChangeEvent("hashchange")); } catch (x) { /* the address stays as it was */ } }
+    var id = ++glide.id, from = scrollY, t0 = performance.now(), dist = Math.abs(spot() - from), dur = RM ? 0 : Math.max(450, Math.min(1100, 380 + dist * 0.18));
+    var root = doc, was = root.style.scrollBehavior; root.style.scrollBehavior = "auto"; sm.run = false; sm.set = -1;
+    var done = function () { root.style.scrollBehavior = was; sm.cur = sm.target = scrollY; sm.set = -1; };
+    var cancel = function () { glide.id++; };
+    addEventListener("wheel", cancel, { once: true, passive: true }); addEventListener("touchstart", cancel, { once: true, passive: true });
+    (function step(now) {
+      if (id !== glide.id) { done(); return; }
+      var k = dur ? Math.min(1, (now - t0) / dur) : 1, ease = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      scrollTo(0, from + (spot() - from) * ease);
+      if (k < 1) requestAnimationFrame(step); else { scrollTo(0, spot()); done(); }
+    })(t0);
   }
   addEventListener("pageshow", function (e) { if (e.persisted) $$(".fx-exit").forEach(function (n) { n.remove(); }); });
 
@@ -679,6 +713,7 @@
     addEventListener("wheel", onWheel, { passive: false });
     addEventListener("scroll", onScroll, { passive: true });
     addEventListener("resize", sizeTrail);
+    document.addEventListener("click", onJump);
     document.addEventListener("click", onClick);
     document.addEventListener("pointerover", function (e) {
       if (cfg().text !== "scramble" || RM) return;
@@ -718,9 +753,15 @@
 
   // ---- A section's own background (content.sectionBg[key] = { on, kind, color, image, video, dim, text }): a colour, a
   // picture or GIF, or a silent looping video, laid behind the section's content whatever the theme.
+  // A link given for a section's background video: a YouTube or Vimeo address (shown as a silent background player) or a video file's address.
+  function vlink(u) { u = String(u || "").trim(); if (!u) return ""; if (/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/i.test(u) || /vimeo\.com\/(?:video\/)?(\d{6,12})/i.test(u) || /^https:\/\//i.test(u) || !/^[a-z][a-z0-9+.-]*:/i.test(u)) return u; return ""; }
   var SBG_CSS = ".has-sbg{isolation:isolate}.has-sbg[data-sbg-c]{background:var(--sbg)!important}" +
     ".sbg{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;border-radius:inherit}" +
     ".sbg img,.sbg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}.sbg i{position:absolute;inset:0}" +
+    // a YouTube or Vimeo player is cropped to fill the section like a picture
+    ".sbg[data-embed]{container-type:size}.sbg iframe{position:absolute;top:50%;left:50%;width:max(100%,calc(100cqh*1.7778));height:max(100%,calc(100cqw*.5625));transform:translate(-50%,-50%);border:0;pointer-events:none}" +
+    ".sbg[data-blur] iframe{filter:blur(var(--sbl))}" +
+    ".sbg-ctl{position:absolute;right:14px;bottom:14px;z-index:4;display:flex;gap:8px}.sbg-ctl button{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.55);color:#fff;font-size:14px;line-height:1;cursor:pointer;backdrop-filter:blur(6px)}.sbg-ctl button:hover{background:rgba(0,0,0,.75)}.sbg-ctl button:focus-visible{outline:2px solid #fff;outline-offset:2px}" +
     ".sbg[data-blur] img,.sbg[data-blur] video{filter:blur(var(--sbl));inset:calc(var(--sbl)*-2);width:calc(100% + var(--sbl)*4);height:calc(100% + var(--sbl)*4)}" +
     // a slideshow of pictures: they follow each other by themselves, with no controls
     ".sbg[data-slides] img{opacity:0;transition:opacity 1.4s ease}.sbg[data-slides] img.on{opacity:1}" +
@@ -775,7 +816,7 @@
   // ---- Moving backgrounds and patterns, drawn here with no library: for a section (sectionBg[key].kind "anim" or
   // "pattern") and for the page or its hero (theme.animBg). They take the theme's colours, pause when out of sight
   // or when the tab is hidden, and stay still for visitors who ask their device for less motion.
-  var ANIMS = { motion: 1, sand: 1, synth: 1, liquid: 1, terrain: 1, aurora: 1, stars: 1 };
+  var ANIMS = { motion: 1, sand: 1, synth: 1, liquid: 1, terrain: 1, aurora: 1, stars: 1, flow: 1, silk: 1, bubbles: 1, rain: 1, fireflies: 1, ripple: 1, petals: 1, hex: 1, orbit: 1, warp: 1 };
   var PATTERNS = { dots: 1, grid: 1, lines: 1, columns: 1, diagonal: 1, cross: 1, waves: 1, rings: 1, topo: 1, gingham: 1, stripes: 1, mesh: 1, grain: 1 };
   function rgbOf(str) { var m = /rgba?\(\s*([\d.]+)[ ,]+([\d.]+)[ ,]+([\d.]+)(?:[ ,/]+([\d.]+%?))?/.exec(String(str || "")); if (!m) return null; var a = m[4] == null ? 1 : /%$/.test(m[4]) ? parseFloat(m[4]) / 100 : +m[4]; return a < 0.05 ? null : [Math.round(+m[1]), Math.round(+m[2]), Math.round(+m[3])]; }
   /** The colours to draw with: the theme's two accents, and the colour behind `el` (its own, else the nearest one above it). */
@@ -806,6 +847,9 @@
     var K = animCols(host, o.bg), c1 = K.c1, c2 = K.c2, bg = K.bg, dark = K.dark, ink = dark ? [255, 255, 255] : [20, 22, 26];
     var W = 0, H = 0, D = 1, S = {}, speed = o.speed === "lively" ? 1.9 : o.speed === "slow" ? 0.55 : 1, strength = Math.max(0.2, Math.min(1, (+o.strength || 100) / 100));
     cv.style.opacity = String(strength);
+    // Where the pointer is over this background (0 to 1 each way): several of them answer to it.
+    var M = { x: 0.5, y: 0.5, on: false };
+    function onMove(e) { var r = cv.getBoundingClientRect(); if (!r.width || !r.height) return; var x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height; M.on = x >= 0 && x <= 1 && y >= 0 && y <= 1; if (M.on) { M.x = x; M.y = y; } }
     function size() {
       var r = host.getBoundingClientRect(); D = Math.min(1.5, window.devicePixelRatio || 1) * (kind === "liquid" || kind === "aurora" ? 0.5 : 1);
       var w = Math.max(2, Math.round(r.width * D)), h = Math.max(2, Math.round(r.height * D));
@@ -910,6 +954,151 @@
         g.lineWidth = Math.max(1, D);
         for (i = 0; i < P.length; i++) for (j = i + 1; j < P.length; j++) { var dx = P[i].x - P[j].x, dy = P[i].y - P[j].y, d = Math.sqrt(dx * dx + dy * dy); if (d < link) { g.strokeStyle = RGBA(MIX(c1, c2, 0.5), ((1 - d / link) * 0.42).toFixed(3)); g.beginPath(); g.moveTo(P[i].x, P[i].y); g.lineTo(P[j].x, P[j].y); g.stroke(); } }
         P.forEach(function (q) { var tw = 0.5 + 0.5 * Math.sin(t * 1.3 * q.p.sp + q.p.ph); g.fillStyle = RGBA(q.p.c, (0.45 + tw * 0.5).toFixed(3)); g.beginPath(); g.arc(q.x, q.y, D * (1.6 + tw * 1.6), 0, 6.2832); g.fill(); });
+      },
+      // thousands of fine trails following an unseen current; the pointer stirs them
+      flow: function (t) {
+        var n = Math.max(250, Math.min(1000, Math.round(W * H / (D * D) / 1500))), i, p, fresh = !S.p, cols = [c1, c2, ink];
+        if (fresh) { S.p = []; for (i = 0; i < n; i++) S.p.push({ x: h2(i, 41) * W, y: h2(i, 42) * H, k: h2(i, 43) < 0.46 ? 0 : h2(i, 43) < 0.92 ? 1 : 2, life: 40 + h2(i, 44) * 160 }); g.clearRect(0, 0, W, H); }
+        var steps = fresh ? 60 : 1, v = 2.4 * D * Math.min(1.6, Math.max(0.6, speed)), R = 170 * D, mx = M.x * W, my = M.y * H;
+        g.lineCap = "round"; g.lineWidth = Math.max(1, D * 1.1);
+        for (var s = 0; s < steps; s++) {
+          g.globalCompositeOperation = "destination-out"; g.fillStyle = "rgba(0,0,0,0.055)"; g.fillRect(0, 0, W, H); g.globalCompositeOperation = "source-over";
+          for (var k = 0; k < 3; k++) {
+            g.strokeStyle = RGBA(cols[k], k === 2 ? 0.3 : 0.55); g.beginPath();
+            for (i = 0; i < S.p.length; i++) {
+              p = S.p[i]; if (p.k !== k) continue;
+              var a = fbm(p.x / (320 * D), p.y / (320 * D) + t * 0.025) * 6.2832 * 2, dx = Math.cos(a) * v, dy = Math.sin(a) * v;
+              if (M.on) { var ex = p.x - mx, ey = p.y - my, d2 = ex * ex + ey * ey; if (d2 < R * R) { var f = (1 - Math.sqrt(d2) / R) * v * 1.6, d = Math.sqrt(d2) + 0.01; dx += -ey / d * f; dy += ex / d * f; } }
+              g.moveTo(p.x, p.y); p.x += dx; p.y += dy; g.lineTo(p.x, p.y);
+              if (--p.life < 0 || p.x < -6 || p.x > W + 6 || p.y < -6 || p.y > H + 6) { S.q = (S.q || 0) + 1; p.x = h2(i, 45 + S.q) * W; p.y = h2(i, 46 + S.q * 1.7) * H; p.life = 60 + h2(i, 47 + S.q) * 160; }
+            }
+            g.stroke();
+          }
+        }
+      },
+      // sheets of fine lines that roll like silk; they lift toward the pointer
+      silk: function (t) {
+        g.clearRect(0, 0, W, H);
+        var n = 26, i, x, step = W / 70, mx = M.x * W, my = M.y * H, sg = W * 0.09;
+        g.lineWidth = Math.max(1, D * 1.15);
+        for (i = 0; i < n; i++) {
+          var z = i / (n - 1); g.strokeStyle = RGBA(MIX(c1, c2, z), (0.1 + 0.42 * Math.sin(z * 3.1416)).toFixed(3)); g.beginPath();
+          for (x = -step; x <= W + step; x += step) {
+            var u = x / W, y = H * 0.5 + (z - 0.5) * H * 0.34 + Math.sin(u * 4.2 + t * 0.5 + z * 2.6) * Math.cos(u * 1.7 - t * 0.23 + z * 1.4) * H * 0.2 * (0.45 + z) + Math.sin(u * 9 - t * 0.7 + z * 5) * H * 0.012;
+            if (M.on) y += Math.exp(-((x - mx) * (x - mx)) / (2 * sg * sg)) * (my - y) * 0.32;
+            if (x <= -step + 0.01) g.moveTo(x, y); else g.lineTo(x, y);
+          }
+          g.stroke();
+        }
+      },
+      // bubbles rising, each with its own wobble and a glint of light
+      bubbles: function (t) {
+        g.clearRect(0, 0, W, H);
+        var n = Math.max(16, Math.min(46, Math.round(W * H / (D * D) / 30000))), i;
+        for (i = 0; i < n; i++) {
+          var r = (7 + h2(i, 51) * h2(i, 52) * 46) * D, span = H + r * 2 + 20, v = (16 + h2(i, 53) * 34) * D * (46 * D / (r + 20 * D) + 0.5), y = H + r - ((t * v + h2(i, 54) * span) % span), x = h2(i, 55) * W + Math.sin(t * (0.5 + h2(i, 56)) + i) * 16 * D;
+          var c = h2(i, 57) > 0.5 ? c1 : c2, fade = Math.min(1, (y + r) / (H * 0.25)), near = M.on ? Math.max(0, 1 - Math.sqrt(Math.pow(x - M.x * W, 2) + Math.pow(y - M.y * H, 2)) / (150 * D)) : 0;
+          r *= 1 + near * 0.35;
+          g.fillStyle = RGBA(c, (0.07 + near * 0.1) * fade); g.strokeStyle = RGBA(c, (0.5 + near * 0.3) * fade); g.lineWidth = Math.max(1, D * 1.3);
+          g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); g.stroke();
+          g.strokeStyle = RGBA(ink, 0.5 * fade); g.lineWidth = Math.max(1, r * 0.09); g.beginPath(); g.arc(x, y, r * 0.66, 3.6, 4.6); g.stroke();
+        }
+      },
+      // columns of digits falling at their own pace
+      rain: function (t) {
+        g.clearRect(0, 0, W, H);
+        var cw = 18 * D, cols = Math.ceil(W / cw), rows = Math.ceil(H / cw) + 1, i, j, tail = 16;
+        g.font = "600 " + Math.round(13 * D) + "px ui-monospace,Menlo,Consolas,monospace"; g.textAlign = "center"; g.textBaseline = "middle";
+        for (i = 0; i < cols; i++) {
+          if (h2(i, 61) < 0.22) continue;
+          var v = 5 + h2(i, 62) * 11, span = rows + tail + 6 + h2(i, 63) * 20, head = (t * v + h2(i, 64) * span) % span, hi = Math.floor(head), c = h2(i, 65) > 0.5 ? c1 : c2;
+          for (j = 0; j < tail; j++) {
+            var row = hi - j; if (row < 0 || row > rows) continue;
+            var ch = h2(i * 7.1, row + Math.floor(t * 2 + h2(i, row) * 5)) > 0.5 ? "1" : "0";
+            g.fillStyle = j === 0 ? RGBA(MIX(c, ink, 0.6), 0.95) : RGBA(c, (0.72 * (1 - j / tail)).toFixed(3));
+            g.fillText(ch, i * cw + cw / 2, row * cw + cw / 2);
+          }
+        }
+      },
+      // soft lights that wander and breathe; they brighten near the pointer
+      fireflies: function (t) {
+        g.clearRect(0, 0, W, H);
+        var n = Math.max(18, Math.min(48, Math.round(W * H / (D * D) / 26000))), i;
+        for (i = 0; i < n; i++) {
+          var sp = 0.4 + h2(i, 71), ph = h2(i, 72) * 6.28;
+          var x = (h2(i, 73) + Math.sin(t * 0.13 * sp + ph) * 0.12 + Math.sin(t * 0.37 * sp + ph * 2.3) * 0.035) * W, y = (h2(i, 74) + Math.cos(t * 0.11 * sp + ph * 1.4) * 0.12 + Math.sin(t * 0.41 * sp + ph) * 0.03) * H;
+          var pulse = Math.pow(0.5 + 0.5 * Math.sin(t * 1.15 * sp + ph), 3), near = M.on ? Math.max(0, 1 - Math.sqrt(Math.pow(x - M.x * W, 2) + Math.pow(y - M.y * H, 2)) / (220 * D)) : 0;
+          var lit = Math.min(1, pulse + near), r = (9 + lit * 30) * D, c = h2(i, 75) > 0.5 ? c1 : c2, gr = g.createRadialGradient(x, y, 0, x, y, r);
+          gr.addColorStop(0, RGBA(c, 0.2 + lit * 0.6)); gr.addColorStop(0.35, RGBA(c, 0.08 + lit * 0.22)); gr.addColorStop(1, RGBA(c, 0));
+          g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill();
+          g.fillStyle = RGBA(MIX(c, ink, dark ? 0.7 : 0.1), 0.35 + lit * 0.6); g.beginPath(); g.arc(x, y, D * (1.2 + lit * 1.4), 0, 6.2832); g.fill();
+        }
+      },
+      // rings spreading like rain on still water; moving the pointer starts more
+      ripple: function (t) {
+        g.clearRect(0, 0, W, H);
+        var big = Math.max(W, H) * 0.42, i, k;
+        function ring(x, y, age, c, size) { for (k = 0; k < 3; k++) { var a = age - k * 0.09; if (a <= 0) continue; g.strokeStyle = RGBA(c, (Math.pow(1 - a, 1.4) * (0.85 - k * 0.2)).toFixed(3)); g.lineWidth = Math.max(1, D * (2.2 - k * 0.5) * (1 - a * 0.5)); g.beginPath(); g.ellipse(x, y, a * size, a * size * 0.62, 0, 0, 6.2832); g.stroke(); } }
+        for (i = 0; i < 8; i++) { var u = t * 0.16 + i / 8, cyc = Math.floor(u), age = u - cyc; ring(h2(cyc + i * 13.7, 81) * W, h2(cyc + i * 13.7, 82) * H, age, i % 2 ? c1 : c2, big * (0.5 + h2(cyc, i + 83) * 0.6)); }
+        if (M.on) { if (!S.r) S.r = []; var mx = M.x * W, my = M.y * H, lastR = S.r[S.r.length - 1]; if (!lastR || Math.abs(lastR.x - mx) + Math.abs(lastR.y - my) > 70 * D) { S.r.push({ x: mx, y: my, t: t }); if (S.r.length > 10) S.r.shift(); } }
+        if (S.r) S.r.forEach(function (q) { var age = (t - q.t) / 2.6; if (age > 0 && age < 1) ring(q.x, q.y, age, MIX(c1, c2, 0.5), big * 0.45); });
+      },
+      // petals tumbling down on a light breeze
+      petals: function (t) {
+        g.clearRect(0, 0, W, H);
+        var n = Math.max(18, Math.min(60, Math.round(W * H / (D * D) / 17000))), i;
+        for (i = 0; i < n; i++) {
+          var r = (9 + h2(i, 91) * 15) * D, span = H + r * 6, v = (20 + h2(i, 92) * 30) * D, y = ((t * v + h2(i, 93) * span) % span) - r * 3, ph = h2(i, 94) * 6.28;
+          var x = ((h2(i, 95) * W + t * 9 * D + Math.sin(t * 0.7 + ph) * 34 * D) % (W + r * 4)) - r * 2, c = h2(i, 96) > 0.5 ? c1 : c2;
+          g.save(); g.translate(x, y); g.rotate(t * (0.4 + h2(i, 97) * 0.8) + ph); g.scale(1, 0.25 + 0.75 * Math.abs(Math.cos(t * (0.9 + h2(i, 98)) + ph)));
+          g.fillStyle = RGBA(c, 0.3 + h2(i, 99) * 0.34); g.beginPath(); g.moveTo(0, -r); g.bezierCurveTo(r * 0.95, -r * 0.55, r * 0.7, r * 0.75, 0, r); g.bezierCurveTo(-r * 0.7, r * 0.75, -r * 0.95, -r * 0.55, 0, -r); g.fill();
+          g.strokeStyle = RGBA(c, 0.5); g.lineWidth = Math.max(1, D * 0.8); g.beginPath(); g.moveTo(0, -r * 0.7); g.lineTo(0, r * 0.8); g.stroke();
+          g.restore();
+        }
+      },
+      // a honeycomb that lights up in passing waves, and under the pointer
+      hex: function (t) {
+        g.clearRect(0, 0, W, H);
+        var s = 30 * D, w = s * 1.732, hh = s * 1.5, rows = Math.ceil(H / hh) + 2, cols = Math.ceil(W / w) + 2, r, q, k, mx = M.x * W, my = M.y * H;
+        var ox = W * (0.5 + 0.38 * Math.sin(t * 0.17)), oy = H * (0.5 + 0.38 * Math.cos(t * 0.13));
+        function path(cx, cy, rad) { g.moveTo(cx, cy - rad); for (k = 1; k < 6; k++) g.lineTo(cx + Math.sin(k * 1.0472) * rad, cy - Math.cos(k * 1.0472) * rad); g.closePath(); }
+        g.lineWidth = Math.max(1, D); g.strokeStyle = RGBA(c1, dark ? 0.16 : 0.13); g.beginPath();
+        for (r = -1; r < rows; r++) for (q = -1; q < cols; q++) path(q * w + (r & 1 ? w / 2 : 0), r * hh, s - D);
+        g.stroke();
+        for (r = -1; r < rows; r++) for (q = -1; q < cols; q++) {
+          var cx = q * w + (r & 1 ? w / 2 : 0), cy = r * hh, d = Math.sqrt((cx - ox) * (cx - ox) + (cy - oy) * (cy - oy)) / D;
+          var lit = Math.pow(Math.max(0, Math.sin(d * 0.016 - t * 1.5) * 0.6 + fbm(q * 0.31 + t * 0.12, r * 0.31) * 0.9 - 0.42), 1.4);
+          if (M.on) lit += Math.max(0, 1 - Math.sqrt((cx - mx) * (cx - mx) + (cy - my) * (cy - my)) / (150 * D)) * 0.8;
+          if (lit < 0.03) continue;
+          g.fillStyle = RGBA(MIX(c1, c2, h2(q, r)), Math.min(0.62, lit * 0.6).toFixed(3)); g.beginPath(); path(cx, cy, (s - D * 2) * Math.min(1, 0.55 + lit)); g.fill();
+        }
+      },
+      // planets circling a small sun, each leaving a short trail
+      orbit: function (t) {
+        g.clearRect(0, 0, W, H);
+        var cx = W * 0.5 + (M.on ? (M.x - 0.5) * W * 0.06 : 0), cy = H * 0.52 + (M.on ? (M.y - 0.5) * H * 0.06 : 0), R = Math.max(W, H) * 0.56, i, n = 8;
+        g.save(); g.translate(cx, cy); g.rotate(-0.32);
+        var sun = g.createRadialGradient(0, 0, 0, 0, 0, R * 0.09); sun.addColorStop(0, RGBA(c2, 0.9)); sun.addColorStop(0.35, RGBA(c1, 0.45)); sun.addColorStop(1, RGBA(c1, 0)); g.fillStyle = sun; g.beginPath(); g.arc(0, 0, R * 0.09, 0, 6.2832); g.fill();
+        for (i = 0; i < n; i++) {
+          var rx = R * (0.13 + i * 0.115), ry = rx * 0.36, c = i % 2 ? c2 : c1, a = t * (0.55 / (0.6 + i * 0.5)) + i * 1.9;
+          g.strokeStyle = RGBA(c, 0.2); g.lineWidth = Math.max(1, D); g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, 6.2832); g.stroke();
+          g.strokeStyle = RGBA(c, 0.6); g.lineWidth = Math.max(1.5, D * 2); g.beginPath(); g.ellipse(0, 0, rx, ry, 0, a - 0.55, a); g.stroke();
+          var px = Math.cos(a) * rx, py = Math.sin(a) * ry, pr = D * (3 + h2(i, 101) * 5) * (1 + 0.35 * Math.sin(a));
+          g.shadowColor = RGBA(c, 0.8); g.shadowBlur = pr * 3; g.fillStyle = RGBA(c, 0.95); g.beginPath(); g.arc(px, py, pr, 0, 6.2832); g.fill(); g.shadowBlur = 0;
+        }
+        g.restore();
+      },
+      // stars streaming past, as if flying through them; the pointer steers
+      warp: function (t) {
+        g.clearRect(0, 0, W, H);
+        var tx = W * (0.5 + (M.on ? (M.x - 0.5) * 0.3 : 0)), ty = H * (0.5 + (M.on ? (M.y - 0.5) * 0.3 : 0));
+        S.cx = S.cx == null ? tx : S.cx + (tx - S.cx) * 0.06; S.cy = S.cy == null ? ty : S.cy + (ty - S.cy) * 0.06;
+        var n = Math.max(90, Math.min(260, Math.round(W * H / (D * D) / 5200))), i, far = Math.sqrt(W * W + H * H) * 0.62; g.lineCap = "round";
+        for (i = 0; i < n; i++) {
+          var a = h2(i, 111) * 6.2832, z = (h2(i, 112) + t * 0.11 * (0.5 + h2(i, 113))) % 1, r1 = z * z * far, r0 = Math.max(0, z - 0.035 - z * 0.05), c = h2(i, 114) < 0.4 ? c1 : h2(i, 114) < 0.8 ? c2 : ink; r0 = r0 * r0 * far;
+          g.strokeStyle = RGBA(c, (Math.min(1, 0.08 + z * 0.9) * (c === ink ? 0.45 : 0.8)).toFixed(3)); g.lineWidth = Math.max(1, D * (0.5 + z * 1.6));
+          g.beginPath(); g.moveTo(S.cx + Math.cos(a) * r0, S.cy + Math.sin(a) * r0); g.lineTo(S.cx + Math.cos(a) * r1, S.cy + Math.sin(a) * r1); g.stroke();
+        }
       }
     };
     var draw = DRAW[kind] || DRAW.motion, raf = 0, seen = true, alive = true, t0 = performance.now(), last = 0;
@@ -921,11 +1110,12 @@
     }
     function still() { size(); try { draw(7.3); } catch (e) { /* stays empty */ } }
     var io = null, ro = null;
-    function stop() { alive = false; if (raf) cancelAnimationFrame(raf); if (io) io.disconnect(); if (ro) ro.disconnect(); }
+    function stop() { alive = false; if (raf) cancelAnimationFrame(raf); if (io) io.disconnect(); if (ro) ro.disconnect(); window.removeEventListener("pointermove", onMove); }
     if (RM || o.still) { still(); if (window.ResizeObserver) { ro = new ResizeObserver(function () { if (cv.isConnected) still(); else stop(); }); ro.observe(host); } }
     else {
       if (window.IntersectionObserver) { io = new IntersectionObserver(function (es) { seen = es[es.length - 1].isIntersecting; }); io.observe(host); }
       still(); raf = requestAnimationFrame(frame);
+      if (matchMedia("(hover: hover)").matches) window.addEventListener("pointermove", onMove, { passive: true });
     }
     return { stop: stop };
   }
@@ -978,7 +1168,7 @@
   }
   /** Brand → Logo motion: a quiet movement on the site's logo (in the menu and above the hero), all the time, once
    *  when the page opens, or when pointed at. Still for visitors who ask their device for less motion. */
-  var LOGO_ANIMS = { float: 3.4, pulse: 2.6, spin: 9, swing: 2.8, bounce: 2.4, flip: 4.5, jelly: 2.2, glow: 2.8, shine: 3.6 };
+  var LOGO_ANIMS = { float: 3.4, pulse: 2.6, spin: 9, swing: 2.8, bounce: 2.4, flip: 4.5, jelly: 2.2, glow: 2.8, shine: 3.6, heartbeat: 1.8, wobble: 2.4, tada: 2.6, rubber: 2.4, tilt: 5, drop: 4, pop: 3.2, neon: 3.4, hue: 6, glitch: 3.2 };
   function logoMotion(opts, root) {
     var B = (opts.c && opts.c.brand) || {}, kind = LOGO_ANIMS[B.logoAnim] ? B.logoAnim : "", on = B.logoAnimOn === "hover" || B.logoAnimOn === "load" ? B.logoAnimOn : "", sp = B.logoAnimSpeed === "slow" ? 1.6 : B.logoAnimSpeed === "lively" ? 0.6 : 1;
     Array.prototype.forEach.call(document.querySelectorAll("[data-la]"), function (n) { n.removeAttribute("data-la"); n.removeAttribute("data-la-on"); n.style.animationDuration = ""; });
@@ -989,7 +1179,8 @@
         "@keyframes la-swing{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}@keyframes la-bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-24%)}50%{transform:translateY(0)}65%{transform:translateY(-10%)}80%{transform:translateY(0)}}" +
         "@keyframes la-flip{0%,55%{transform:perspective(420px) rotateY(0)}85%,100%{transform:perspective(420px) rotateY(360deg)}}@keyframes la-jelly{0%,100%{transform:scale(1,1)}25%{transform:scale(1.14,.88)}50%{transform:scale(.9,1.1)}75%{transform:scale(1.06,.95)}}" +
         "@keyframes la-glow{0%,100%{filter:drop-shadow(0 0 0 rgba(0,0,0,0))}50%{filter:drop-shadow(0 0 10px var(--c1,var(--accent,#5b7cff)))}}@keyframes la-shine{0%,62%,100%{filter:brightness(1) saturate(1)}78%{filter:brightness(1.7) saturate(1.25)}}" +
-        "[data-la]{transform-origin:50% 50%;animation-timing-function:ease-in-out;animation-iteration-count:infinite;will-change:transform}[data-la=spin]{animation-timing-function:linear}[data-la=swing]{transform-origin:50% 0}" +
+        "@keyframes la-heartbeat{0%,40%,100%{transform:scale(1)}10%{transform:scale(1.16)}20%{transform:scale(1)}30%{transform:scale(1.1)}}@keyframes la-wobble{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-9%) rotate(-6deg)}30%{transform:translateX(7%) rotate(4deg)}45%{transform:translateX(-5%) rotate(-3deg)}60%{transform:translateX(3%) rotate(2deg)}75%{transform:translateX(-1%) rotate(-1deg)}}@keyframes la-tada{0%,55%,100%{transform:scale(1) rotate(0)}6%,12%{transform:scale(.9) rotate(-4deg)}18%,30%,42%{transform:scale(1.14) rotate(4deg)}24%,36%{transform:scale(1.14) rotate(-4deg)}}@keyframes la-rubber{0%,60%,100%{transform:scale(1,1)}15%{transform:scale(1.25,.75)}24%{transform:scale(.78,1.22)}33%{transform:scale(1.14,.86)}42%{transform:scale(.95,1.05)}50%{transform:scale(1.04,.96)}}@keyframes la-tilt{0%,100%{transform:perspective(380px) rotateX(14deg) rotateY(0)}25%{transform:perspective(380px) rotateX(0) rotateY(18deg)}50%{transform:perspective(380px) rotateX(-14deg) rotateY(0)}75%{transform:perspective(380px) rotateX(0) rotateY(-18deg)}}@keyframes la-drop{0%{transform:translateY(-70%) scale(1,1);opacity:0}12%{transform:translateY(0) scale(1,1);opacity:1}17%{transform:translateY(0) scale(1.16,.8)}23%{transform:translateY(-14%) scale(.96,1.05)}30%,100%{transform:translateY(0) scale(1,1);opacity:1}}@keyframes la-pop{0%{transform:scale(.4);opacity:0}12%{transform:scale(1.18);opacity:1}18%{transform:scale(.94)}24%,100%{transform:scale(1);opacity:1}}@keyframes la-neon{0%,18%,22%,25%,53%,57%,100%{opacity:1;filter:drop-shadow(0 0 3px var(--c1,var(--accent,#5b7cff))) drop-shadow(0 0 11px var(--c1,var(--accent,#5b7cff)))}20%,24%,55%{opacity:.45;filter:none}}@keyframes la-hue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}@keyframes la-glitch{0%,6%,42%,48%,100%{transform:none;filter:none;clip-path:none}1%{transform:translate(-5%,2%) skewX(-8deg);filter:hue-rotate(80deg) saturate(1.6)}2.5%{transform:translate(5%,-2%) skewX(6deg);clip-path:inset(12% 0 46% 0)}4%{transform:translate(-3%,0);clip-path:inset(58% 0 8% 0);filter:hue-rotate(-70deg) saturate(1.6)}43.5%{transform:translate(4%,1%) skewX(5deg);filter:hue-rotate(60deg)}45.5%{transform:translate(-4%,-1%);clip-path:inset(30% 0 30% 0)}}" +
+        "[data-la]{transform-origin:50% 50%;animation-timing-function:ease-in-out;animation-iteration-count:infinite;will-change:transform}[data-la=spin],[data-la=hue]{animation-timing-function:linear}[data-la=glitch]{animation-timing-function:steps(1,end)}[data-la=swing]{transform-origin:50% 0}" +
         Object.keys(LOGO_ANIMS).map(function (k) { return "[data-la=" + k + "]:not([data-la-on=hover]),a:hover [data-la=" + k + "][data-la-on=hover],[data-la=" + k + "][data-la-on=hover]:hover{animation-name:la-" + k + "}"; }).join("") +
         "[data-la][data-la-on=load]{animation-iteration-count:2}@media (prefers-reduced-motion:reduce){[data-la]{animation:none!important}}";
       document.head.appendChild(st4);
@@ -1015,12 +1206,12 @@
       if (/^(left|center|right)$/.test(k.align || "")) { el.setAttribute("data-salign", k.align); try { sectionAlign(el); } catch (e) { /* the text is still aligned */ } }
       if (!k.on) return;
       var pics = k.kind === "slides" && Array.isArray(k.slides) ? k.slides.map(function (x) { return url(x); }).filter(Boolean) : [];
-      var kind = k.kind === "image" || k.kind === "video" ? k.kind : pics.length > 1 ? "slides" : "color", src = kind === "image" ? url(k.image) : kind === "video" ? url(k.video) : kind === "slides" ? pics[0] : pics[0] || "";
+      var kind = k.kind === "image" || k.kind === "video" ? k.kind : pics.length > 1 ? "slides" : "color", src = kind === "image" ? url(k.image) : kind === "video" ? url(k.video) || vlink(k.videoUrl) : kind === "slides" ? pics[0] : pics[0] || "";
       if (k.kind === "slides" && pics.length === 1) kind = "image";
       if (k.kind === "anim" && ANIMS[k.anim]) kind = "anim"; else if (k.kind === "pattern" && PATTERNS[k.pattern]) kind = "pattern";
       var col = /^(#[0-9a-f]{3,8}|rgba?\([0-9., %]+\))$/i.test(String(k.color || "").trim()) ? String(k.color).trim() : "";
       if (kind !== "color" && kind !== "anim" && kind !== "pattern" && !src) kind = "color";
-      var old = el.querySelector(":scope > .sbg"); if (old) { if (old.__ab) old.__ab.stop(); old.remove(); }
+      var old = el.querySelector(":scope > .sbg"); if (old) { if (old.__ab) old.__ab.stop(); old.remove(); } var oldc = el.querySelector(":scope > .sbg-ctl"); if (oldc) oldc.remove();
       el.classList.add("has-sbg");
       try { sectionText(el, k, opts); } catch (e) { /* the text keeps the theme's look */ }
       if (k.kind === "none" || (kind === "color" && !col)) return;
@@ -1046,10 +1237,30 @@
           var tick = setInterval(function () { if (!box.isConnected) { clearInterval(tick); return; } if (document.hidden) return; ims.forEach(function (x) { x.classList.remove("was"); }); ims[at].classList.remove("on"); ims[at].classList.add("was"); at = (at + 1) % ims.length; ims[at].classList.add("on"); }, secs * 1000); }
       } else
       if (kind === "image") { var im = document.createElement("img"); im.alt = ""; im.decoding = "async"; im.loading = "lazy"; im.src = src; box.appendChild(im); }
-      else { var v = document.createElement("video"); v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute("muted", ""); v.setAttribute("playsinline", ""); v.preload = "metadata"; if (!RM) v.autoplay = true; var poster = url(k.image); if (poster) v.poster = poster; v.src = src; box.appendChild(v); if (!RM) { var pl = v.play(); if (pl && pl.catch) pl.catch(function () {}); } }
+      else {
+        var yt = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/i.exec(src), vm = /vimeo\.com\/(?:video\/)?(\d{6,12})/i.exec(src), lp = !k.videoOnce, go = RM ? 0 : 1, ctl = null;
+        if (yt || vm) {
+          var fr = document.createElement("iframe"); fr.title = "Background video"; fr.setAttribute("tabindex", "-1"); fr.setAttribute("allow", "autoplay; encrypted-media"); fr.setAttribute("referrerpolicy", "strict-origin-when-cross-origin"); fr.loading = "lazy";
+          fr.src = yt ? "https://www.youtube-nocookie.com/embed/" + yt[1] + "?autoplay=" + go + "&mute=1&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&playsinline=1&iv_load_policy=3&enablejsapi=1" + (lp ? "&loop=1&playlist=" + yt[1] : "") : "https://player.vimeo.com/video/" + vm[1] + "?background=1&autoplay=" + go + "&muted=1&dnt=1&loop=" + (lp ? 1 : 0);
+          box.setAttribute("data-embed", ""); box.appendChild(fr);
+          var say = function (f, a2) { try { fr.contentWindow.postMessage(yt ? JSON.stringify({ event: "command", func: f, args: a2 || "" }) : JSON.stringify(a2 === undefined ? { method: f } : { method: f, value: a2 }), "*"); } catch (e) { /* the player is not ready */ } };
+          ctl = { play: function () { say(yt ? "playVideo" : "play"); }, pause: function () { say(yt ? "pauseVideo" : "pause"); }, mute: function (m) { if (yt) say(m ? "mute" : "unMute"); else say("setVolume", m ? 0 : 1); } };
+        } else {
+          var v = document.createElement("video"); v.muted = true; v.loop = lp; v.playsInline = true; v.setAttribute("muted", ""); v.setAttribute("playsinline", ""); v.preload = "metadata"; if (!RM) v.autoplay = true; var poster = url(k.image); if (poster) v.poster = poster; v.src = src; box.appendChild(v); if (!RM) { var pl = v.play(); if (pl && pl.catch) pl.catch(function () {}); }
+          ctl = { play: function () { var q = v.play(); if (q && q.catch) q.catch(function () {}); }, pause: function () { v.pause(); }, mute: function (m) { v.muted = m; } };
+        }
+        if (k.videoControls && ctl) {
+          var bar = document.createElement("div"); bar.className = "sbg-ctl fx-skip"; var playing = !RM, muted = true;
+          var pb = document.createElement("button"), mb = document.createElement("button"); pb.type = mb.type = "button";
+          var paint = function () { pb.textContent = playing ? "❚❚" : "▶"; pb.setAttribute("aria-label", playing ? "Pause the background video" : "Play the background video"); mb.textContent = muted ? "🔇" : "🔊"; mb.setAttribute("aria-label", muted ? "Turn the sound on" : "Turn the sound off"); };
+          pb.onclick = function () { playing = !playing; if (playing) ctl.play(); else ctl.pause(); paint(); };
+          mb.onclick = function () { muted = !muted; ctl.mute(muted); if (!muted && !playing) { playing = true; ctl.play(); } paint(); };
+          bar.appendChild(pb); bar.appendChild(mb); paint(); box.__ctl = bar;
+        }
+      }
       var dim = Math.max(0, Math.min(95, Number(k.dim) || 0));
       if (dim) { var ov = document.createElement("i"); ov.style.background = ((k.shade ? k.shade === "light" : k.text === "dark") ? "rgba(255,255,255," : "rgba(0,0,0,") + dim / 100 + ")"; box.appendChild(ov); }
-      el.insertBefore(box, el.firstChild);
+      el.insertBefore(box, el.firstChild); if (box.__ctl) el.appendChild(box.__ctl);
       if (kind === "anim") box.__ab = animMount(box, k.anim, { speed: k.animSpeed, strength: k.animStrength, bg: col });
       else if (kind === "pattern") { var pt = document.createElement("i"); pt.setAttribute("data-pattern", k.pattern); pt.style.background = patternCss(k.pattern, animCols(box, col)); box.insertBefore(pt, box.firstChild); }
     });
@@ -1141,6 +1352,24 @@
     var r; try { r = a11yScan(); } catch (x) { r = { issues: [{ kind: "error", text: "The check could not finish on this page.", where: String(x && x.message || x).slice(0, 80) }], seen: 0 }; }
     window.parent.postMessage({ type: "cms:a11y", page: (location.pathname.split("/").pop() || "index.html") + location.search, issues: r.issues, seen: r.seen }, location.origin);
   });
+
+  // Frosted glass (iPhone-style): drifting colour light behind translucent, blurred surfaces. Active on html[data-pattern=glass].
+  var GLASS_SEL = ".card,.hp-card,.dish,.offer,.order-box,.mbar,.pcard,.box,.sum,.quote,.wcard,.ocard,.ctaband,.cat,.tile,.proj,.stat,.rv-c,.rv-top,.rv-form,.faq-item,.plan,.price,.pkg";
+  var GLASS_CSS = "html[data-pattern=glass]{--g1:var(--c1,var(--accent,#6a7cff));--g2:var(--c2,var(--accent2,#ff7ab8));--g3:var(--c3,var(--c2,var(--accent2,#6ee7d8)));background:var(--bg)}" +
+    "html[data-pattern=glass] body{background:transparent!important}" +
+    "html[data-pattern=glass]::before{content:'';position:fixed;inset:-12%;z-index:-1;pointer-events:none;background:radial-gradient(34% 34% at 18% 22%,color-mix(in srgb,var(--g1) 62%,transparent),transparent 70%),radial-gradient(30% 30% at 82% 16%,color-mix(in srgb,var(--g2) 55%,transparent),transparent 70%),radial-gradient(36% 36% at 70% 84%,color-mix(in srgb,var(--g3) 50%,transparent),transparent 70%),radial-gradient(28% 28% at 12% 88%,color-mix(in srgb,var(--g2) 40%,transparent),transparent 70%);filter:blur(30px) saturate(1.3);animation:fx-glassdrift 26s ease-in-out infinite alternate}" +
+    "@keyframes fx-glassdrift{to{transform:translate3d(3%,-3%,0) scale(1.08) rotate(4deg)}}" +
+    "html[data-pattern=glass] .band:not(.has-sbg){background:transparent!important}" +
+    "html[data-pattern=glass] .plane{display:none!important}" +
+    "html[data-pattern=glass] :is(" + GLASS_SEL + "){background:color-mix(in srgb,var(--surface) 46%,transparent)!important;-webkit-backdrop-filter:blur(26px) saturate(1.8);backdrop-filter:blur(26px) saturate(1.8);border:1px solid rgba(255,255,255,.55)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 12px 40px -12px rgba(20,24,60,.28)!important}" +
+    "html[data-pattern=glass][data-glass=dark] :is(" + GLASS_SEL + "){background:color-mix(in srgb,var(--surface) 38%,transparent)!important;border-color:rgba(255,255,255,.16)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 14px 44px -14px rgba(0,0,0,.6)!important}" +
+    "html[data-pattern=glass] :is(.nav,.hdr){background:color-mix(in srgb,var(--bg) 40%,transparent)!important;-webkit-backdrop-filter:blur(26px) saturate(1.8);backdrop-filter:blur(26px) saturate(1.8);box-shadow:inset 0 -1px 0 rgba(255,255,255,.35)}" +
+    "@media(prefers-reduced-motion:reduce){html[data-pattern=glass]::before{animation:none}}";
+  function glassMode() {
+    if (doc.getAttribute("data-pattern") !== "glass") { doc.removeAttribute("data-glass"); return; }
+    if (!document.getElementById("fx-glass")) { var g = document.createElement("style"); g.id = "fx-glass"; g.textContent = GLASS_CSS; document.head.appendChild(g); }
+    doc.setAttribute("data-glass", isDark() ? "dark" : "light");
+  }
   function init(opts) {
     opts = opts || {};
     var root = opts.root || document.body;
@@ -1148,6 +1377,7 @@
     try { sectionBgs(opts, root); } catch (e) { /* a background is never worth a broken page */ }
     try { pageBg(opts, root); } catch (e) { /* a background is never worth a broken page */ }
     try { logoMotion(opts, root); } catch (e) { /* nor is a moving logo */ }
+    try { glassMode(); } catch (e) {}
     ensureStyle(); wire();
     try { badge(opts.badge); } catch (e) {}
     var c = cfg(), sig = JSON.stringify(c), changed = sig !== st.sig;
@@ -1173,7 +1403,8 @@
 
     unboot();
     // entrance: page cover from the previous page, or the theme's loader
-    var animate = !RM && (!PREVIEW || changed), delay = 0;
+    // The entrance plays once per page load: a later render of the same page (after the database answers, a sign-in, a language change) keeps what is already shown instead of playing it again.
+    var animate = !RM && (PREVIEW ? changed : !st.animated), delay = 0; if (animate && !PREVIEW) st.animated = true;
     if (cover && c.loader !== "none" && !RM) {
       // Arriving from another page of the site: the panels are already closed, so play the site's full intro
       // (the name rises in letter by letter, then the panels open) exactly as on the first visit.
@@ -1185,13 +1416,13 @@
     // A signature theme with its own preloader is already on screen: the waiting panel just goes.
     else if (cover && document.getElementById("vxLoad")) { cover.remove(); cover = null; st.loaderPlayed = true; }
     else if (cover) { st.loaderPlayed = true; revealCover(); delay = 350; }
-    else if (c.loader !== "none" && !RM) {
+    else if (c.loader !== "none" && !skipIntro(c) && !RM) {
       var play = PREVIEW ? c.loader !== st.loader : !st.loaderPlayed && Date.now() - T0 < 5000;
-      if (play) { st.loaderPlayed = true; playLoader(c.loader, opts.brand || document.title); delay = c.loader === "counter" ? 1250 : 950; }
+      if (play) { st.loaderPlayed = true; if (c.loaderOn === "load") try { sessionStorage.setItem("fx-intro-seen", "1"); } catch (x) {} playLoader(c.loader, opts.brand || document.title); delay = c.loader === "counter" ? 1250 : 950; }
     }
     st.loader = c.loader;
     // Remembered on this device, so the next visit starts on the intro's panel (see skeleton()).
-    if (!PREVIEW) try { var ik = "site-intro:" + location.pathname.replace(/[^/]*$/, ""); var vxl = document.getElementById("vxLoad"); if (c.loader !== "none") { var ic = colors(); localStorage.setItem(ik, JSON.stringify({ k: c.loader, bg: ic.deep, fg: ic.on })); } else if (vxl) { st.ownIntro = true; var vcs = getComputedStyle(vxl); localStorage.setItem(ik, JSON.stringify({ k: "curtain", bg: vcs.backgroundColor, fg: vcs.color })); } else if (!st.ownIntro) localStorage.removeItem(ik); } catch (e) {}
+    if (!PREVIEW) try { var ik = "site-intro:" + location.pathname.replace(/[^/]*$/, ""); var vxl = document.getElementById("vxLoad"); if (c.loader !== "none" && c.loaderOn === "menu") localStorage.removeItem(ik); else if (c.loader !== "none") { var ic = colors(); localStorage.setItem(ik, JSON.stringify({ k: c.loader, bg: ic.deep, fg: ic.on })); } else if (vxl) { st.ownIntro = true; var vcs = getComputedStyle(vxl); localStorage.setItem(ik, JSON.stringify({ k: "curtain", bg: vcs.backgroundColor, fg: vcs.color })); } else if (!st.ownIntro) localStorage.removeItem(ik); } catch (e) {}
     setupText(root, c, animate, delay);
     setupScrollExtras(root, c);
     setupHeroFx(root, c);
@@ -1226,7 +1457,7 @@
     if (!root || root.firstElementChild) return null;
     // A site with an intro screen: its panel closes at once (in the colours remembered on this device), so the visitor
     // sees the intro from the first moment and never the outline before it. The intro then plays on that same panel.
-    if (!cover && !st.bootTried && !RM && !PREVIEW) {
+    if (!cover && !st.bootTried && !RM && !PREVIEW && !skipIntro(cfg())) {
       st.bootTried = true;
       try {
         var m = JSON.parse(localStorage.getItem("site-intro:" + location.pathname.replace(/[^/]*$/, "")) || "null"), okc = /^(#[0-9a-f]{3,8}|rgba?\([0-9., %]+\))$/i;
