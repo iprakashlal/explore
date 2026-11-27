@@ -817,7 +817,7 @@
   // ---- Moving backgrounds and patterns, drawn here with no library: for a section (sectionBg[key].kind "anim" or
   // "pattern") and for the page or its hero (theme.animBg). They take the theme's colours, pause when out of sight
   // or when the tab is hidden, and stay still for visitors who ask their device for less motion.
-  var ANIMS = { motion: 1, sand: 1, synth: 1, liquid: 1, terrain: 1, aurora: 1, stars: 1, flow: 1, silk: 1, bubbles: 1, rain: 1, fireflies: 1, ripple: 1, petals: 1, hex: 1, orbit: 1, warp: 1 };
+  var ANIMS = { motion: 1, sand: 1, dunes: 1, sandlogo: 1, synth: 1, liquid: 1, terrain: 1, aurora: 1, stars: 1, flow: 1, silk: 1, bubbles: 1, rain: 1, fireflies: 1, ripple: 1, petals: 1, hex: 1, orbit: 1, warp: 1 };
   var PATTERNS = { dots: 1, grid: 1, lines: 1, columns: 1, diagonal: 1, cross: 1, waves: 1, rings: 1, topo: 1, gingham: 1, stripes: 1, mesh: 1, grain: 1 };
   function rgbOf(str) { var m = /rgba?\(\s*([\d.]+)[ ,]+([\d.]+)[ ,]+([\d.]+)(?:[ ,/]+([\d.]+%?))?/.exec(String(str || "")); if (!m) return null; var a = m[4] == null ? 1 : /%$/.test(m[4]) ? parseFloat(m[4]) / 100 : +m[4]; return a < 0.05 ? null : [Math.round(+m[1]), Math.round(+m[2]), Math.round(+m[3])]; }
   /** The colours to draw with: the theme's two accents, and the colour behind `el` (its own, else the nearest one above it). */
@@ -886,6 +886,80 @@
           if (p.x > W + 4) p.x = -4; else if (p.x < -4) p.x = W + 4; if (p.y > H + 4) p.y = -4; else if (p.y < -4) p.y = H + 4;
           var tw = Math.pow(Math.abs(Math.sin(p.ph + t * (0.6 + p.c))), 6), col = p.c < 0.34 ? c1 : p.c < 0.67 ? c2 : ink;
           g.fillStyle = RGBA(col, (0.16 + tw * 0.74).toFixed(3)); g.fillRect(p.x, p.y, p.s, p.s);
+        }
+      },
+      // dunes rolling to the horizon, their ripples drifting in the wind, and a band of light sweeping across that makes the grains glint
+      dunes: function (t) {
+        g.clearRect(0, 0, W, H);
+        var L = 5, k, x, step = Math.max(5 * D, W / 96), sweep = ((t * 0.06) % 1.5 - 0.25) * W, band = W * 0.22, WHITE = [255, 255, 255];
+        var ridge = function (k, x) { var y0 = H * (0.3 + k * 0.15); return y0 - (fbm(x / W * (1.5 + k * 0.35) + k * 3.1 + t * 0.008 * (k + 1), k * 1.7) - 0.42) * H * (0.16 + k * 0.03); };
+        // the sky glows faintly where the light is
+        var sky = g.createRadialGradient(sweep, H * 0.15, 0, sweep, H * 0.15, W * 0.55); sky.addColorStop(0, RGBA(MIX(bg, c2, dark ? 0.3 : 0.18), 0.55)); sky.addColorStop(1, RGBA(bg, 0));
+        g.fillStyle = sky; g.fillRect(0, 0, W, H);
+        for (k = 0; k < L; k++) {
+          var z = k / (L - 1), col = MIX(bg, k % 2 ? c2 : c1, (dark ? 0.14 : 0.1) + z * (dark ? 0.2 : 0.16));
+          g.beginPath(); g.moveTo(-2, H + 2);
+          for (x = -2; x <= W + step; x += step) g.lineTo(x, ridge(k, x));
+          g.lineTo(W + 2, H + 2); g.closePath();
+          var fill = g.createLinearGradient(0, H * (0.22 + k * 0.15), 0, H); fill.addColorStop(0, RGBA(MIX(col, ink, dark ? 0.1 : 0.06), 1)); fill.addColorStop(1, RGBA(MIX(col, bg, 0.35), 1));
+          g.fillStyle = fill; g.fill();
+          // the crest catches the light most where the band passes
+          g.lineWidth = Math.max(1, D * (0.8 + z)); var crest = g.createLinearGradient(sweep - band, 0, sweep + band, 0);
+          crest.addColorStop(0, RGBA(ink, 0.06)); crest.addColorStop(0.5, RGBA(dark ? MIX(WHITE, c2, 0.3) : MIX(c2, c1, 0.35), (0.3 + z * 0.35).toFixed(3))); crest.addColorStop(1, RGBA(ink, 0.06));
+          g.strokeStyle = crest; g.stroke();
+          // wind ripples on its face, drifting slowly
+          g.lineWidth = Math.max(1, D * 0.7);
+          for (var r = 1; r <= 3; r++) {
+            g.beginPath();
+            for (x = -2; x <= W + step; x += step) { var y = ridge(k, x) + r * H * 0.022 * (1 + z) + Math.sin(x / (W * 0.035) + t * 0.5 + r * 1.3 + k) * H * 0.004; if (x < 0) g.moveTo(x, y); else g.lineTo(x, y); }
+            g.strokeStyle = RGBA(ink, (dark ? 0.05 : 0.04) + 0.02 * z); g.stroke();
+          }
+        }
+        // grains: most stay dim; in the band of light each one glints in turn
+        if (!S.p) { var n = Math.max(500, Math.min(2600, Math.round(W * H / (D * D) / 520))); S.p = []; for (var i = 0; i < n; i++) S.p.push({ x: h2(i, 31) * W, y: H * (0.25 + h2(i, 32) * 0.75), s: (0.6 + h2(i, 33) * 1.3) * D, ph: h2(i, 34) * 6.28, c: h2(i, 35) }); }
+        for (var j = 0; j < S.p.length; j++) {
+          var p = S.p[j], lit = Math.exp(-Math.pow((p.x - sweep) / band, 2)), tw = Math.pow(Math.abs(Math.sin(p.ph + t * (1.4 + p.c * 1.6))), 10);
+          var a = 0.04 + lit * (0.2 + tw * 0.8); if (a < 0.05) continue;
+          // a glint is light, not dirt: pale on a dark page, the accent's bright tone on a light one
+          var gc = dark ? MIX(p.c < 0.5 ? c2 : c1, WHITE, 0.6) : MIX(p.c < 0.5 ? c2 : c1, WHITE, 0.1);
+          g.fillStyle = RGBA(gc, Math.min(1, a).toFixed(3)); g.fillRect(p.x, p.y, p.s, p.s);
+          // the brightest ones flash as a tiny four-point star
+          if (lit > 0.45 && tw > 0.75) { var r2 = p.s * (1.6 + tw * 1.6); g.fillStyle = RGBA(dark ? WHITE : MIX(gc, WHITE, 0.25), (lit * tw * 0.85).toFixed(3)); g.fillRect(p.x - r2 + p.s / 2, p.y + p.s / 2 - D * 0.4, r2 * 2, D * 0.8); g.fillRect(p.x + p.s / 2 - D * 0.4, p.y - r2 + p.s / 2, D * 0.8, r2 * 2); }
+        }
+      },
+      // grains of sand gather into the PA mark, shimmer, then scatter on the wind, over and over; the pointer blows them apart
+      sandlogo: function (t) {
+        var i, p;
+        if (!S.p) {
+          // the mark, drawn once small and sampled: each grain is given a spot inside it and the colour of its part
+          var PW = 220, PH = 390, oc = document.createElement("canvas"); oc.width = PW; oc.height = PH; var o2 = oc.getContext("2d"), sx = PW / 1060, sy = PH / 1880;
+          var poly = function (pts, col) { o2.fillStyle = col; o2.beginPath(); for (var k = 0; k < pts.length; k += 2) o2[k ? "lineTo" : "moveTo"]((pts[k] - 425) * sx, (pts[k + 1] - 85) * sy); o2.closePath(); o2.fill(); };
+          poly([431, 240, 644, 89, 644, 1307, 431, 1176], "#f00"); poly([644, 89, 1267, 447, 1049, 570, 644, 339], "#f00"); poly([1267, 447, 1268, 694, 666, 1043, 666, 782, 1049, 570], "#f00");
+          poly([1268, 727, 1474, 853, 1474, 1957, 1268, 1832], "#00f"); poly([666, 1076, 1268, 727, 1268, 971, 876, 1200], "#00f"); poly([666, 1076, 876, 1200, 1243, 1420, 1243, 1675, 666, 1322], "#00f");
+          var px = o2.getImageData(0, 0, PW, PH).data, spots = [];
+          for (var yy = 0; yy < PH; yy += 2) for (var xx = 0; xx < PW; xx += 2) { var q = (yy * PW + xx) * 4; if (px[q + 3] > 128) spots.push([xx / PW, yy / PH, px[q] > px[q + 2] ? 0 : 1]); }
+          var n = Math.max(1400, Math.min(4500, Math.round(W * H / (D * D) / 210))), lh = Math.min(H * 0.78, W * 0.62 * PH / PW), lw = lh * PW / PH, ox = (W - lw) / 2, oy = (H - lh) / 2;
+          // the brand's own colours, made lighter on a dark page so they still show
+          var WH = [255, 255, 255], pc = [52, 51, 95], ac = [51, 102, 154]; if (dark) { pc = MIX([96, 92, 200], WH, 0.25); ac = MIX(ac, WH, 0.3); }
+          S.p = []; for (i = 0; i < n; i++) { var sp = spots[Math.floor(h2(i, 41) * spots.length)] || [0.5, 0.5, 0]; S.p.push({ tx: ox + (sp[0] + (h2(i, 42) - 0.5) * 0.012) * lw, ty: oy + (sp[1] + (h2(i, 43) - 0.5) * 0.008) * lh, hx: h2(i, 44) * W, hy: h2(i, 45) * H, s: (0.7 + h2(i, 46) * 1.3) * D, ph: h2(i, 47) * 6.28, c: sp[2] ? ac : pc, d: h2(i, 48), vx: 0, vy: 0, ox: 0, oy: 0 }); }
+          S.t = t;
+        }
+        var dt = Math.min(0.05, Math.max(0, t - S.t)); S.t = t;
+        g.clearRect(0, 0, W, H);
+        // one loop: gather (0–3.2s), hold (to 6.4s), scatter (to 8.4s), drift (to 10s); each grain a little early or late
+        var cyc = t % 10, mx = M.x * W, my = M.y * H, R = 120 * D, ease = function (x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+        for (i = 0; i < S.p.length; i++) {
+          p = S.p[i];
+          var lag = p.d * 1.1, f = cyc < 6.4 ? ease((cyc - lag) / 2.6) : 1 - ease((cyc - 6.4 - lag * 0.6) / 1.8);
+          // where it is when scattered: its own spot, drifting on a slow current
+          var wx = p.hx + (fbm(p.hx / (300 * D) + t * 0.05, p.hy / (300 * D)) - 0.45) * 160 * D, wy = p.hy + (fbm(p.hy / (300 * D), p.hx / (300 * D) + t * 0.05) - 0.45) * 90 * D;
+          var x = wx + (p.tx - wx) * f, y = wy + (p.ty - wy) * f;
+          // the pointer blows nearby grains away; they settle back by themselves
+          if (M.on) { var ex = x + p.ox - mx, ey = y + p.oy - my, d2 = ex * ex + ey * ey; if (d2 < R * R) { var dd = Math.sqrt(d2) + 0.01, k2 = (1 - dd / R) * 2600 * D; p.vx += ex / dd * k2 * dt; p.vy += ey / dd * k2 * dt; } }
+          p.vx += -p.ox * 9 * dt; p.vy += -p.oy * 9 * dt; p.vx *= Math.pow(0.04, dt); p.vy *= Math.pow(0.04, dt); p.ox += p.vx * dt; p.oy += p.vy * dt;
+          var tw = Math.pow(Math.abs(Math.sin(p.ph + t * (1.2 + p.d * 1.8))), 8), a = (0.22 + f * 0.6) + tw * 0.3;
+          g.fillStyle = RGBA(f > 0.5 ? p.c : MIX(p.c, ink, 0.25), Math.min(1, a).toFixed(3)); g.fillRect(x + p.ox, y + p.oy, p.s, p.s);
+          if (tw > 0.9 && f > 0.8) { g.fillStyle = RGBA(dark ? [255, 255, 255] : MIX(p.c, [255, 255, 255], 0.55), (tw * 0.7).toFixed(3)); g.fillRect(x + p.ox - p.s, y + p.oy + p.s / 2 - D * 0.35, p.s * 3, D * 0.7); g.fillRect(x + p.ox + p.s / 2 - D * 0.35, y + p.oy - p.s, D * 0.7, p.s * 3); }
         }
       },
       // a low sun over a grid that runs to the horizon
