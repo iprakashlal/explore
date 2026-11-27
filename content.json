@@ -656,5 +656,136 @@
     "inThisEdition": "In this edition",
     "classifieds": "Classifieds",
     "letters": "Letters to the editor"
+  },
+  "studioDefaults": {
+    "kind": "portfolio",
+    "on": [
+      "emails",
+      "mail",
+      "privacy",
+      "terms",
+      "consent",
+      "formprivacy",
+      "footer"
+    ],
+    "v": {
+      "emails": {
+        "emails": {
+          "signin": {
+            "subject": "",
+            "intro": "",
+            "footer": ""
+          }
+        }
+      },
+      "privacy": {
+        "text": "This policy explains what personal data {name} collects through this website, why, and the choices you have.\n\n## Who we are\n\n{name}\n{address}\nPhone: {phone}\nEmail: {email}\nGSTIN: {gstin}\nCIN: {cin}\n\n## What we collect\n\n- **Technical data:** basic information your browser sends to any website, such as its type and the pages requested. Optional cookies and similar tools are used only after you allow them in the consent banner.\n\n## Why we use it\n\n- to answer your enquiry or booking request\n- to keep the website secure and stop misuse\n- to meet our legal and tax duties\n\nWe use your details only for these purposes. We do not sell personal data.\n\n## Who we share it with\n\nOnly with those who help us run this service:\n- the companies that host this website and its database\n- authorities, when the law requires it\n\n## How long we keep it\n\nEnquiries are kept for as long as needed to answer them. After that they are deleted.\n\n## Your rights\n\nYou can ask us for a copy of your personal data, ask us to correct or delete it, withdraw a consent you gave, and name another person to act for you. In India these rights come from the Digital Personal Data Protection Act, 2023. To use them, or to raise a grievance, write to us using the details above. If you are not satisfied with our answer, you may approach the Data Protection Board of India.\n\n## Children\n\nThis website is not meant for children, and we do not knowingly collect their data without a parent's or guardian's consent.\n\n## Changes\n\nWe may update this policy. The date below shows when it was last changed.\n\nLast updated: {date}"
+      },
+      "terms": {
+        "text": "These terms apply when you use this website, which is run by {name}, {address}. By using the site you agree to them.\n\n## Using this website\n\nPlease use the site lawfully and do not try to disrupt it, copy it in bulk or get into parts that are not public. We may change or withdraw content at any time.\n\n## Information on the site\n\nWe take care to keep descriptions, prices, opening hours and availability correct, but mistakes can happen. If something is wrong we will correct it and tell you before going ahead with anything that depends on it.\n\n## Intellectual property\n\nThe text, pictures, logos and design on this site belong to {name} or are used with permission. Please ask before reusing them.\n\n## Liability\n\nWe are responsible for what the law says we cannot exclude. Beyond that, we are not liable for indirect loss or for problems caused by events outside our reasonable control.\n\n## Privacy\n\nHow we handle personal data is explained in our Privacy policy.\n\n## Law and disputes\n\nThese terms are governed by the laws of India. Please contact us first so we can try to resolve any complaint; otherwise the courts where we are based will have jurisdiction.\n\n## Contact\n\n{name}\n{address}\nPhone: {phone}\nEmail: {email}\n\nLast updated: {date}"
+      },
+      "consent": {
+        "consent": {
+          "india": {
+            "title": "Your consent matters",
+            "text": "We use cookies and similar tools to run this website and, with your consent, to understand how it is used and to show you relevant offers. We use your personal data only for the purposes listed here, in line with India's Digital Personal Data Protection Act, 2023. You can withdraw your consent at any time from “Cookie settings”.",
+            "accept": "Accept all",
+            "decline": "Decline",
+            "manage": "Choose purposes",
+            "save": "Save my choices",
+            "extra": "To see, correct or erase your data, or to raise a grievance, contact us using the details on this site. You may also approach the Data Protection Board of India."
+          },
+          "intl": {
+            "title": "We value your privacy",
+            "text": "We use cookies and similar technologies. Necessary ones make the site work. With your permission we also use them to measure visits and to personalise content and ads. You can accept all, reject the non-essential ones or choose by category, and change your mind at any time in “Cookie settings”.",
+            "accept": "Accept all",
+            "decline": "Reject non-essential",
+            "manage": "Manage preferences",
+            "save": "Save preferences",
+            "extra": ""
+          }
+        }
+      },
+      "formprivacy": {},
+      "footer": {
+        "contact": {
+          "footerLeft": "© {year} {name}",
+          "footerRight": "Circle · Square · Triangle"
+        },
+        "poweredBy": {
+          "show": true
+        }
+      }
+    }
+  },
+  "emails": {
+    "signin": {
+      "subject": "",
+      "intro": "",
+      "footer": ""
+    }
+  },
+  "staticPages": [
+    {
+      "id": "pg-privacy",
+      "title": "Privacy policy",
+      "slug": "privacy",
+      "subtitle": "",
+      "updated": "2026-11-27",
+      "body": "This policy explains what personal data Prakash Lal collects through this website, why, and the choices you have.\n\n## Who we are\n\nPrakash Lal\n\nEmail: prakashlal@live.com\n\n## What we collect\n\n- **Technical data:** basic information your browser sends to any website, such as its type and the pages requested. Optional cookies and similar tools are used only after you allow them in the consent banner.\n\n## Why we use it\n\n- to answer your enquiry or booking request\n- to keep the website secure and stop misuse\n- to meet our legal and tax duties\n\nWe use your details only for these purposes. We do not sell personal data.\n\n## Who we share it with\n\nOnly with those who help us run this service:\n- the companies that host this website and its database\n- authorities, when the law requires it\n\n## How long we keep it\n\nEnquiries are kept for as long as needed to answer them. After that they are deleted.\n\n## Your rights\n\nYou can ask us for a copy of your personal data, ask us to correct or delete it, withdraw a consent you gave, and name another person to act for you. In India these rights come from the Digital Personal Data Protection Act, 2023. To use them, or to raise a grievance, write to us using the details above. If you are not satisfied with our answer, you may approach the Data Protection Board of India.\n\n## Children\n\nThis website is not meant for children, and we do not knowingly collect their data without a parent's or guardian's consent.\n\n## Changes\n\nWe may update this policy. The date below shows when it was last changed.\n\nLast updated: 28 November 2026",
+      "show": true,
+      "inNav": false,
+      "inFooter": true,
+      "navLabel": "",
+      "showTitle": true,
+      "align": "left",
+      "size": "large",
+      "width": "narrow",
+      "toc": false,
+      "crumbs": true,
+      "noindex": false,
+      "legal": "privacy"
+    },
+    {
+      "id": "pg-terms",
+      "title": "Terms of use",
+      "slug": "terms",
+      "subtitle": "",
+      "updated": "2026-11-27",
+      "body": "These terms apply when you use this website, which is run by Prakash Lal, . By using the site you agree to them.\n\n## Using this website\n\nPlease use the site lawfully and do not try to disrupt it, copy it in bulk or get into parts that are not public. We may change or withdraw content at any time.\n\n## Information on the site\n\nWe take care to keep descriptions, prices, opening hours and availability correct, but mistakes can happen. If something is wrong we will correct it and tell you before going ahead with anything that depends on it.\n\n## Intellectual property\n\nThe text, pictures, logos and design on this site belong to Prakash Lal or are used with permission. Please ask before reusing them.\n\n## Liability\n\nWe are responsible for what the law says we cannot exclude. Beyond that, we are not liable for indirect loss or for problems caused by events outside our reasonable control.\n\n## Privacy\n\nHow we handle personal data is explained in our Privacy policy.\n\n## Law and disputes\n\nThese terms are governed by the laws of India. Please contact us first so we can try to resolve any complaint; otherwise the courts where we are based will have jurisdiction.\n\n## Contact\n\nPrakash Lal\n\nEmail: prakashlal@live.com\n\nLast updated: 28 November 2026",
+      "show": true,
+      "inNav": false,
+      "inFooter": true,
+      "navLabel": "",
+      "showTitle": true,
+      "align": "left",
+      "size": "large",
+      "width": "narrow",
+      "toc": false,
+      "crumbs": true,
+      "noindex": false,
+      "legal": "terms"
+    }
+  ],
+  "consent": {
+    "policyPage": "pg-privacy",
+    "india": {
+      "title": "Your consent matters",
+      "text": "We use cookies and similar tools to run this website and, with your consent, to understand how it is used and to show you relevant offers. We use your personal data only for the purposes listed here, in line with India's Digital Personal Data Protection Act, 2023. You can withdraw your consent at any time from “Cookie settings”.",
+      "accept": "Accept all",
+      "decline": "Decline",
+      "manage": "Choose purposes",
+      "save": "Save my choices",
+      "extra": "To see, correct or erase your data, or to raise a grievance, contact us using the details on this site. You may also approach the Data Protection Board of India."
+    },
+    "intl": {
+      "title": "We value your privacy",
+      "text": "We use cookies and similar technologies. Necessary ones make the site work. With your permission we also use them to measure visits and to personalise content and ads. You can accept all, reject the non-essential ones or choose by category, and change your mind at any time in “Cookie settings”.",
+      "accept": "Accept all",
+      "decline": "Reject non-essential",
+      "manage": "Manage preferences",
+      "save": "Save preferences",
+      "extra": ""
+    }
   }
 }
