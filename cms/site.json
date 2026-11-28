@@ -3,11 +3,11 @@
   "name": "Prakash Lal",
   "version": 58,
   "admin": "admin.html",
-  "exportedAt": "2026-11-27T23:11:13.722Z",
+  "exportedAt": "2026-11-28T00:14:25.680Z",
   "generator": "Site Studio",
   "studioBuild": {
-    "id": "9ec4b03",
-    "at": "2026-11-27T23:01:29.262Z"
+    "id": "2a78dcc",
+    "at": "2026-11-27T23:55:18.244Z"
   },
   "badge": "1qt9bdp",
   "menu": {
@@ -97,5 +97,6 @@
       }
     ]
   },
-  "menuV": "zlmmg9"
+  "menuV": "zlmmg9",
+  "pdV": "1pstsqm"
 }
