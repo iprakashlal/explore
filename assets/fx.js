@@ -757,6 +757,8 @@
   // A link given for a section's background video: a YouTube or Vimeo address (shown as a silent background player) or a video file's address.
   function vlink(u) { u = String(u || "").trim(); if (!u) return ""; if (/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/i.test(u) || /vimeo\.com\/(?:video\/)?(\d{6,12})/i.test(u) || /^https:\/\//i.test(u) || !/^[a-z][a-z0-9+.-]*:/i.test(u)) return u; return ""; }
   var SBG_CSS = ".has-sbg{isolation:isolate}.has-sbg[data-sbg-c]{background:var(--sbg)!important}" +
+    ".sbg img,.sbg video{object-position:var(--sbp,50% 50%)}.sbg-still{position:absolute;left:0;top:0;width:100%;will-change:transform}.sbg-still>i{position:absolute;inset:0}" +
+    ".fx-sbg-hide{display:none!important}.has-sbg[data-sbg-nobefore]::before,.has-sbg[data-sbg-noafter]::after{display:none!important}" +
     ".sbg{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;border-radius:inherit}" +
     ".sbg img,.sbg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}.sbg i{position:absolute;inset:0}" +
     // a YouTube or Vimeo player is cropped to fill the section like a picture
@@ -800,6 +802,97 @@
       var tag = n.tagName.toLowerCase(), block = d === "block" || d === "flex" || d === "grid" || d === "flow-root" || d === "list-item";
       if (block && (cs.maxWidth !== "none" || tag === "svg" || tag === "img" || tag === "hr")) n.classList.add("fx-salm");
     });
+  }
+  // ---- Custom site & code blocks (content.custom, content.blocks): the owner's own HTML, CSS and JavaScript, as a whole
+  // page in place of the sections or as blocks placed after a section. Drawn again with the page (old copies are removed).
+  function ccRun(js, el, name) {
+    if (!String(js || "").trim()) return;
+    var sc = document.createElement("script"); sc.setAttribute("data-cc", "");
+    window.__ccBlock = el;
+    sc.textContent = "(function(block){try{\n" + js + "\n}catch(e){console.error(" + JSON.stringify(name) + ",e)}})(window.__ccBlock);";
+    document.body.appendChild(sc); window.__ccBlock = null;
+  }
+  /* Built-in analytics: this page view, sent to the site's own database (cms/site.json says which) once per page load.
+     Only when the visitor allows analytics under the site's cookie consent (or the site asks for none), never in the
+     Studio's preview, and not when the site switched it off (content.analytics.on === false). No cookie is set and nothing
+     is stored in the browser; the database keeps the page, the referring site, the device type and the country. */
+  function siteAnalytics(c) {
+    if (PREVIEW || window.__saSent || navigator.webdriver || (c && c.analytics && c.analytics.on === false)) return;
+    if (/^(localhost|127\.|192\.168\.)/.test(location.hostname) || location.protocol === "file:") return;
+    var allowed = function () { var S = window.SiteConsent; try { return !(S && S.state && S.state().asked) || S.has("analytics"); } catch (e) { return true; } };
+    var send = function () {
+      if (window.__saSent || !allowed()) return; window.__saSent = 1;
+      fetch("cms/site.json", { cache: "force-cache" }).then(function (r) { return r.json(); }).then(function (j) {
+        var h = j && (j.host && j.host.kind === "cloudflare" ? j.host : j.signin); if (!h || !h.api || !h.site) return;
+        var q = new URLSearchParams(location.search), w = innerWidth || 1200, key = q.get("p") ? "p" : q.get("s") ? "s" : q.get("product") ? "product" : "";
+        var body = JSON.stringify({ site: h.site, path: location.pathname + (key ? "?" + key + "=" + q.get(key) : ""), ref: document.referrer || "", host: location.hostname, dev: w < 768 ? "mobile" : w < 1100 ? "tablet" : "desktop", src: q.get("utm_source") || q.get("ref") || "" });
+        var url = String(h.api).replace(/\/+$/, "") + "/a/hit";
+        if (!(navigator.sendBeacon && navigator.sendBeacon(url, body))) fetch(url, { method: "POST", body: body, keepalive: true, mode: "cors" }).catch(function () {});
+      }).catch(function () {});
+    };
+    // The consent banner is drawn a moment after the page: wait for it, then count now or once the visitor allows analytics.
+    setTimeout(send, 1200); addEventListener("site:consent", send);
+  }
+  function customCode(c, root) {
+    if (!c || !root) return;
+    Array.prototype.forEach.call(document.querySelectorAll(".cc-site,.cc-block,style[data-cc],script[data-cc]"), function (n) { n.remove(); });
+    Array.prototype.forEach.call(root.querySelectorAll(".cc-hidden"), function (n) { n.classList.remove("cc-hidden"); });
+    var home = (document.body.getAttribute("data-page") || "home") === "home" && !/[?&]p=/.test(location.search);
+    var main = root.querySelector("main") || root, css = function (t, id) { if (!String(t || "").trim()) return; var st = document.createElement("style"); st.setAttribute("data-cc", id); st.textContent = t; document.head.appendChild(st); };
+    if (!document.getElementById("cc-css")) { var b = document.createElement("style"); b.id = "cc-css"; b.textContent = ".cc-hidden{display:none!important}"; document.head.appendChild(b); }
+    var K = c.custom;
+    if (K && K.on && (K.pages === "all" || home)) {
+      // Everything the page drew in its main part is put away; before it is the menu bar, after it the footer.
+      Array.prototype.forEach.call(main.children, function (n) { n.classList.add("cc-hidden"); });
+      var kids = Array.prototype.slice.call(root.children), at = kids.indexOf(main);
+      if (at >= 0) kids.forEach(function (n, i) { if (n === main || /^(SCRIPT|STYLE)$/.test(n.tagName) || n.classList.contains("skip")) return; if ((i < at && K.keepNav === false) || (i > at && K.keepFooter === false)) n.classList.add("cc-hidden"); });
+      var box = document.createElement("div"); box.className = "cc-site"; box.innerHTML = String(K.html || "");
+      main.insertBefore(box, main.firstChild); css(K.css, "site"); ccRun(K.js, box, "Custom site");
+    }
+    var list = Array.isArray(c.blocks) ? c.blocks : [], last = {};
+    list.forEach(function (k, i) {
+      if (!k || k.on === false || !(k.pages === "all" || home)) return;
+      var el = document.createElement("div"); el.className = "cc-block"; el.id = "cc-" + String(k.id || i).replace(/[^\w-]/g, ""); el.innerHTML = String(k.html || "");
+      var key = String(k.after || ""), prev = last[key], target = null;
+      if (key && key !== "^top") { try { target = main.querySelector("#" + (window.CSS && CSS.escape ? CSS.escape(key) : key)) || main.querySelector('[data-sec="' + key + '"]'); } catch (e) { target = null; } }
+      if (prev) prev.after(el);
+      else if (key === "^top") main.insertBefore(el, main.firstChild);
+      else if (target) target.after(el);
+      else main.appendChild(el);
+      last[key] = el; css(k.css, el.id); ccRun(k.js, el, k.name || "Code block");
+    });
+  }
+  /** A section given its own background: the page layout's or theme's own picture layers behind its content (an image
+   *  or canvas spread over the whole section, with no words or buttons in it, or a covering ::before / ::after) are put
+   *  away, so what the owner chose shows instead of the layout's standard graphic. */
+  function hideCovers(el) {
+    var R = el.getBoundingClientRect(); if (R.width < 10 || R.height < 10) return;
+    var covers = function (cs, w, h) { return (cs.position === "absolute" || cs.position === "fixed") && w >= R.width * 0.7 && h >= R.height * 0.6; };
+    var walk = function (n, depth) {
+      Array.prototype.forEach.call(n.children, function (ch) {
+        if (ch.classList.contains("sbg") || ch.classList.contains("sbg-ctl") || ch.classList.contains("fx-sbg-hide")) return;
+        var cs = getComputedStyle(ch), r = ch.getBoundingClientRect();
+        if (covers(cs, r.width, r.height) && !(ch.textContent || "").trim() && !ch.querySelector("a,button,input,select,textarea,label,h1,h2,h3,p")) { ch.classList.add("fx-sbg-hide"); return; }
+        if (depth < 2) walk(ch, depth + 1);
+      });
+    };
+    walk(el, 0);
+    ["before", "after"].forEach(function (p) {
+      var cs = getComputedStyle(el, "::" + p); if (!cs || !cs.content || cs.content === "none" || cs.content === "normal") return;
+      var full = cs.top === "0px" && cs.left === "0px" && (cs.right === "0px" || parseFloat(cs.width) >= R.width * 0.7) && (cs.bottom === "0px" || parseFloat(cs.height) >= R.height * 0.6);
+      if ((cs.position === "absolute" || cs.position === "fixed") && full) el.setAttribute("data-sbg-no" + p, "");
+    });
+  }
+  /** A background that stays still while the page scrolls past it (like a window onto it): its picture, slides, video
+   *  or pattern is held at the screen's top while the section moves, cut to the section's shape. */
+  var stills = [], stillOn = false;
+  function stillPlace() { stills = stills.filter(function (b) { return b.box.isConnected; }); stills.forEach(function (b) { var r = b.box.getBoundingClientRect(); b.in.style.transform = "translate3d(0," + (-r.top) + "px,0)"; b.in.style.height = innerHeight + "px"; }); }
+  function stillBg(box) {
+    var inn = document.createElement("div"); inn.className = "sbg-still";
+    while (box.firstChild) inn.appendChild(box.firstChild);
+    box.appendChild(inn); box.setAttribute("data-still", ""); stills.push({ box: box, in: inn });
+    if (!stillOn) { stillOn = true; var q = false, go = function () { if (q) return; q = true; requestAnimationFrame(function () { q = false; stillPlace(); }); }; addEventListener("scroll", go, { passive: true }); addEventListener("resize", go); }
+    stillPlace();
   }
   var COLOR_OK = /^(#[0-9a-f]{3,8}|rgba?\([0-9., %]+\))$/i;
   /** A section's own font, text colour and text style. */
@@ -1275,7 +1368,7 @@
     Object.keys(map).forEach(function (key) {
       var k = map[key]; if (!k || !(k.on || k.align)) return;
       var el = null; try { el = root.querySelector("#" + (window.CSS && CSS.escape ? CSS.escape(key) : key)) || root.querySelector('[data-sec="' + key + '"]'); } catch (e) { /* odd key */ }
-      if (!el && key === "hero") el = root.querySelector("section.hero,.hero");
+      if (!el && key === "hero") el = root.querySelector("section.hero,.hero,#top");
       if (!el && key === "footer") el = root.querySelector("footer");
       if (!el) return;
       if (/^(left|center|right)$/.test(k.align || "")) { el.setAttribute("data-salign", k.align); try { sectionAlign(el); } catch (e) { /* the text is still aligned */ } }
@@ -1291,6 +1384,9 @@
       try { sectionText(el, k, opts); } catch (e) { /* the text keeps the theme's look */ }
       if (k.kind === "none" || (kind === "color" && !col)) return;
       el.setAttribute("data-sbg", kind);
+      // Clean up what an earlier pass put away (the owner may have switched the background off since), then put away the layout's own.
+      Array.prototype.forEach.call(el.querySelectorAll(".fx-sbg-hide"), function (n) { n.classList.remove("fx-sbg-hide"); }); el.removeAttribute("data-sbg-nobefore"); el.removeAttribute("data-sbg-noafter");
+      try { hideCovers(el); } catch (e) { /* the layout's graphic stays */ }
       if (col) { el.style.setProperty("--sbg", col); el.setAttribute("data-sbg-c", ""); }
       if (k.text === "light" || k.text === "dark") el.setAttribute("data-sbg-text", k.text);
       var cs = getComputedStyle(el);
@@ -1386,9 +1482,13 @@
           pr.src = look;
         }
       }
+      // Where the picture or video sits in the section (what stays in view when it is cropped).
+      var POS = { center: "50% 50%", top: "50% 0%", bottom: "50% 100%", left: "0% 50%", right: "100% 50%", "top-left": "0% 0%", "top-right": "100% 0%", "bottom-left": "0% 100%", "bottom-right": "100% 100%" };
+      if (POS[k.pos]) box.style.setProperty("--sbp", POS[k.pos]);
       el.insertBefore(box, el.firstChild); if (box.__ctl) el.appendChild(box.__ctl);
       if (kind === "anim") box.__ab = animMount(box, k.anim, { speed: k.animSpeed, strength: k.animStrength, bg: col });
       else if (kind === "pattern") { var pt = document.createElement("i"); pt.setAttribute("data-pattern", k.pattern); pt.style.background = patternCss(k.pattern, animCols(box, col)); box.insertBefore(pt, box.firstChild); }
+      if (k.fixed && kind !== "anim" && !RM) { try { stillBg(box); } catch (e) { /* it scrolls with the section */ } }
     });
   }
   // ---- Legal & privacy (content.legal, content.privacy)
@@ -1501,6 +1601,8 @@
     var root = opts.root || document.body;
     try { legalBits(opts, root); } catch (e) { /* never worth a broken page */ }
     try { sectionBgs(opts, root); } catch (e) { /* a background is never worth a broken page */ }
+    try { customCode(opts.c, root); } catch (e) { /* the page stays as the template draws it */ }
+    try { siteAnalytics(opts.c); } catch (e) { /* counting never breaks the page */ }
     try { pageBg(opts, root); } catch (e) { /* a background is never worth a broken page */ }
     try { logoMotion(opts, root); } catch (e) { /* nor is a moving logo */ }
     try { glassMode(); } catch (e) {}
